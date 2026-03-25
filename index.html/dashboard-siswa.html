@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PinkEdu - Dashboard Siswa (Cloud)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #ffe4e1; min-height: 100vh; color: #333; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 250px 1fr; gap: 25px; }
+        .card { background: #fff; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(255, 105, 180, 0.1); border: 1px solid #ffb6c1; margin-bottom: 20px; }
+        h2 { color: #d81b60; margin-bottom: 15px; font-size: 1.2rem; border-bottom: 1px dashed #ffb6c1; padding-bottom: 5px; }
+        .sidebar-title { font-size: 1.5rem; color: #d81b60; font-weight: bold; text-align: center; margin-bottom: 20px; }
+        .nav-btn { display: block; width: 100%; background: #ff4081; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-bottom: 10px; font-weight: bold; transition: 0.3s; }
+        .nav-btn:hover { background: #c51162; }
+        .btn-logout { width: 100%; background: #c62828; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        .tab-btn { background: #fff; border: 2px solid #ff4081; color: #ff4081; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; margin-right: 10px; margin-bottom: 10px; white-space: nowrap; }
+        .tab-btn.active { background: #ff4081; color: white; }
+        .post-item { background: #fffafb; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #f8bbd0; position: relative; }
+        .btn-download { display: inline-block; margin-top: 10px; padding: 8px 15px; background: #4caf50; color: white; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.8em; }
+        .upload-box { background: #ffebee; padding: 15px; border-radius: 10px; margin-top: 15px; border: 2px dashed #ff4081; text-align: center; }
+        .input-code { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #f8bbd0; margin-bottom: 10px; outline: none; text-align: center; font-weight: bold; letter-spacing: 2px; }
+        .nilai-badge { position: absolute; top: 10px; right: 10px; background: #ff4081; color: white; padding: 5px 12px; border-radius: 10px; font-weight: bold; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="card">
+                <div class="sidebar-title">PinkEdu</div>
+                <p style="text-align: center; font-size: 0.8em; margin-bottom: 15px;">👤 <b id="nama-siswa">...</b></p>
+                <button class="nav-btn">Halaman Siswa</button>
+                <button class="btn-logout" onclick="prosesLogout()">🚪 Keluar</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>➕ Gabung Kelas Baru</h2>
+                <div style="margin-top: 15px;">
+                    <input type="text" id="input-kode" class="input-code" placeholder="MASUKKAN KODE DARI GURU">
+                    <button class="nav-btn" onclick="gabungKelas()">Gabung Sekarang</button>
+                </div>
+            </div>
+
+            <div id="tabs-kelas" style="margin-bottom: 10px; display: flex; flex-wrap: wrap;"></div>
+
+            <div id="area-materi" style="display: none;">
+                <div class="card">
+                    <h2 id="judul-kelas-aktif">Materi & Tugas</h2>
+                    <div id="daftar-materi" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD0VI7Ai1oRgIwl2UXNV3tE4jbYZO9XJpY",
+            authDomain: "learninp.firebaseapp.com",
+            projectId: "learninp",
+            storageBucket: "learninp.firebasestorage.app",
+            messagingSenderId: "283126632684",
+            appId: "1:283126632684:web:925104a875661b2f5f95c9"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let sesi = JSON.parse(localStorage.getItem('sesiPinkEdu'));
+        if (!sesi || sesi.role !== 'siswa') location.href = 'index.html';
+        document.getElementById('nama-siswa').innerText = sesi.nama;
+
+        window.prosesLogout = () => { localStorage.clear(); location.href = 'index.html'; };
+
+        let listKelas = JSON.parse(localStorage.getItem('myClasses_' + sesi.uid)) || [];
+        let kelasAktifID = '';
+        renderTabs();
+
+        window.gabungKelas = async () => {
+            let id = document.getElementById('input-kode').value.toUpperCase().trim();
+            if (!id) return alert("Masukkan kode kelas!");
+            
+            // Cek apakah sudah pernah gabung secara lokal
+            if (listKelas.includes(id)) return alert("Anda sudah bergabung di kelas ini!");
+
+            try {
+                const docRef = doc(db, "kelas", id);
+                const snap = await getDoc(docRef);
+
+                if (snap.exists()) {
+                    let dataKelas = snap.data();
+                    let listSiswaCloud = dataKelas.siswaGabung || [];
+
+                    // PENTING: Tambahkan nama siswa ke database Guru jika belum ada
+                    if(!listSiswaCloud.includes(sesi.nama)) {
+                        listSiswaCloud.push(sesi.nama);
+                        await updateDoc(docRef, { siswaGabung: listSiswaCloud });
+                    }
+
+                    // Simpan secara lokal di HP siswa
+                    listKelas.push(id);
+                    localStorage.setItem('myClasses_' + sesi.uid, JSON.stringify(listKelas));
+                    
+                    alert("Berhasil Gabung ke Kelas: " + dataKelas.namaKelas);
+                    location.reload(); 
+                } else { 
+                    alert("Kode Kelas Tidak Ditemukan!"); 
+                }
+            } catch (err) {
+                alert("Gagal terhubung ke server!");
+            }
+        };
+
+        function renderTabs() {
+            const area = document.getElementById('tabs-kelas');
+            area.innerHTML = '';
+            listKelas.forEach(id => {
+                let btn = document.createElement('button');
+                btn.className = 'tab-btn' + (kelasAktifID === id ? ' active' : '');
+                btn.innerText = "Kelas: " + id;
+                btn.onclick = () => bukaKonten(id);
+                area.appendChild(btn);
+            });
+        }
+
+        function bukaKonten(id) {
+            kelasAktifID = id;
+            renderTabs();
+            document.getElementById('area-materi').style.display = 'block';
+            onSnapshot(doc(db, "kelas", id), (snap) => {
+                const data = snap.data();
+                document.getElementById('judul-kelas-aktif').innerText = data.namaKelas;
+                renderDaftarMateri(data.postingan || [], data.tugasTerkumpul || []);
+            });
+        }
+
+        function renderDaftarMateri(materi, tugasSiswa) {
+            const area = document.getElementById('daftar-materi');
+            area.innerHTML = '';
+            materi.forEach((p, index) => {
+                let sudahKumpul = tugasSiswa.find(t => t.postId === p.id && t.namaSiswa === sesi.nama);
+                let nilaiTampil = sudahKumpul && sudahKumpul.nilai ? `<div class="nilai-badge">Nilai: ${sudahKumpul.nilai}</div>` : '';
+
+                area.innerHTML += `
+                    <div class="post-item">
+                        ${nilaiTampil}
+                        <h4 style="color:#d81b60;">${p.judul}</h4>
+                        <p style="font-size:0.9em; margin: 5px 0;">${p.deskripsi}</p>
+                        ${p.link ? `<a href="${p.link}" target="_blank" class="btn-download">📥 Lihat Materi</a>` : ''}
+                        
+                        <div class="upload-box">
+                            <p style="font-size:0.8em; font-weight:bold; color:#d81b60;">📤 Kumpulkan Tugas Di Sini:</p>
+                            ${sudahKumpul ? 
+                                `<p style="color:#4caf50; font-size:0.8em; margin-top:5px;">✅ Sudah dikumpulkan</p>` : 
+                                `<input type="file" id="file-${p.id}" style="font-size:0.7em; margin:10px 0;">
+                                 <button class="nav-btn" onclick="kumpulTugas(${p.id}, '${p.judul}')" id="btn-${p.id}" style="padding:5px; font-size:0.8em;">Kirim ke Guru</button>`
+                            }
+                        </div>
+                    </div>`;
+            });
+        }
+
+        window.kumpulTugas = async (postId, judulTugas) => {
+            const fileInput = document.getElementById(`file-${postId}`);
+            const btn = document.getElementById(`btn-${postId}`);
+            if (fileInput.files.length === 0) return alert("Pilih file tugas dulu!");
+
+            btn.innerText = "⏳ Mengunggah..."; btn.disabled = true;
+            let fileUrl = "";
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                const res = await fetch('https://store1.gofile.io/uploadFile', { method: 'POST', body: formData });
+                const resJson = await res.json();
+                if (resJson.status === "ok") {
+                    fileUrl = resJson.data.downloadPage;
+                    
+                    const docRef = doc(db, "kelas", kelasAktifID);
+                    const snap = await getDoc(docRef);
+                    let listTugas = snap.data().tugasTerkumpul || [];
+                    
+                    listTugas.push({
+                        postId: postId,
+                        judulTugas: judulTugas,
+                        namaSiswa: sesi.nama,
+                        link: fileUrl,
+                        nilai: ""
+                    });
+
+                    await updateDoc(docRef, { tugasTerkumpul: listTugas });
+                    alert("Tugas Berhasil Terkirim!");
+                }
+            } catch (err) { alert("Gagal mengirim tugas!"); }
+            finally { btn.innerText = "Kirim ke Guru"; btn.disabled = false; }
+        };
+    </script>
+</body>
+</html>
