@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEACHER - Dashboard Guru (Pro)</title>
+    <title>TEACHER BOSMATH - Dashboard Guru </title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
@@ -13,20 +13,19 @@
         h2 { color: #d81b60; margin-bottom: 15px; font-size: 1.2rem; border-bottom: 1px dashed #ffb6c1; padding-bottom: 5px; }
         .sidebar-title { font-size: 1.5rem; color: #d81b60; font-weight: bold; text-align: center; margin-bottom: 20px; }
         .nav-btn { display: block; width: 100%; background: #ff4081; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-bottom: 10px; font-weight: bold; transition: 0.3s;}
-        .nav-btn:hover { background: #c51162; }
+        .nav-btn:hover { filter: brightness(0.9); transform: translateY(-2px); }
         .btn-logout { width: 100%; background: #c62828; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-top: 20px; font-weight: bold; }
         .class-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
         .tab-btn { background: #fff; border: 2px solid #ff4081; color: #ff4081; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .tab-btn.active { background: #ff4081; color: white; }
         .header-kelas { background: linear-gradient(to right, #ff4081, #d81b60); color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 15px; padding: 20px; margin-bottom: 20px;}
         .input-style { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #f8bbd0; outline: none; margin-top: 5px; margin-bottom: 10px; }
-        .post-item { background: #fffafb; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #f8bbd0; position: relative; }
+        .post-item { background: #fffafb; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #f8bbd0; position: relative; border-left: 5px solid #ff4081; }
         .btn-hapus-post { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.2em; }
         .btn-download { display: inline-block; margin-top: 10px; padding: 5px 15px; background: #4caf50; color: white; border-radius: 15px; text-decoration: none; font-size: 0.8em; font-weight: bold; }
         .siswa-badge { display: inline-block; background: #ffebee; color: #d81b60; padding: 5px 12px; border-radius: 15px; margin: 5px; font-size: 0.85em; font-weight: 600; border: 1px solid #ffb6c1; }
-        .tugas-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        .nilai-input { width: 60px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; text-align: center; }
-        .btn-nilai { background: #ff4081; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8em; margin-left: 5px; }
+        .badge-tipe { font-size: 0.7em; padding: 2px 8px; border-radius: 5px; color: white; font-weight: bold; text-transform: uppercase; }
+        .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; }
     </style>
 </head>
 <body>
@@ -35,7 +34,11 @@
             <div class="card">
                 <div class="sidebar-title">TEACHER</div>
                 <p style="text-align: center; font-size: 0.8em; margin-bottom: 15px;">👤 <b id="nama-guru">...</b></p>
-                <button class="nav-btn">Dashboard Guru</button>
+                
+                <button class="nav-btn" style="background: #2196f3;" onclick="bukaArsipPribadi()">📁 Arsip Modul (Private)</button>
+                <button class="nav-btn" onclick="window.open('https://www.geogebra.org/classic', '_blank')">📐 Buka GeoGebra</button>
+                <button class="nav-btn" style="background: #864cbf;" onclick="window.open('https://quizizz.com/admin', '_blank')">🎯 Buka Quizizz</button>
+                
                 <button class="btn-logout" onclick="prosesLogout()">🚪 Keluar</button>
             </div>
             <div class="card" id="card-siswa" style="display: none;">
@@ -62,13 +65,21 @@
                     <div>
                         <div class="card">
                             <h2>📝 Posting Materi / Tugas</h2>
+                            <label>Kategori Postingan</label>
+                            <select id="input-tipe" class="input-style">
+                                <option value="materi">📖 Materi Belajar</option>
+                                <option value="rpp">📁 RPP / Modul (Publik)</option>
+                                <option value="soal">📝 Bank Soal</option>
+                                <option value="game">🎮 Link Quizizz / Wordwall</option>
+                            </select>
+
                             <label>Judul</label><input type="text" id="input-judul" class="input-style">
-                            <label>Deskripsi</label><textarea id="input-deskripsi" class="input-style" rows="3"></textarea>
-                            <label>Lampiran File</label><input type="file" id="input-file" class="input-style">
-                            <button class="nav-btn" id="btn-kirim" onclick="kirimPostingan()" style="margin-top: 10px;">🚀 Kirim ke Cloud</button>
+                            <label>Deskripsi / Link Game</label><textarea id="input-deskripsi" class="input-style" rows="3"></textarea>
+                            <label>Lampiran File (PDF/Gambar)</label><input type="file" id="input-file" class="input-style">
+                            <button class="nav-btn" id="btn-kirim" onclick="kirimPostingan()" style="margin-top: 10px;">🚀 Kirim ke Kelas</button>
                         </div>
                         <div class="card">
-                            <h2>📋 Riwayat Materi</h2>
+                            <h2>📋 Riwayat Materi Kelas</h2>
                             <div id="daftar-postingan"></div>
                         </div>
                     </div>
@@ -81,6 +92,31 @@
                     </div>
                 </div>
             </div>
+
+            <div id="area-arsip" style="display: none;">
+                <div class="header-kelas" style="background: linear-gradient(to right, #2196f3, #1976d2);">
+                    <div>
+                        <h3 style="font-size: 1.5rem;">📁 Arsip RPP & Modul Pribadi</h3>
+                        <p>File Drive di sini bersifat rahasia dan tidak bisa diakses siswa.</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="card">
+                        <h2>➕ Tambah File Drive</h2>
+                        <label>Judul File </label>
+                        <input type="text" id="arsip-judul" class="input-style">
+                        <label>Link Google Drive</label>
+                        <input type="text" id="arsip-link" class="input-style" placeholder="https://drive.google.com/file/d/...">
+                        <button class="nav-btn" style="background: #2196f3; margin-top: 10px;" onclick="simpanArsip()">💾 Simpan ke Arsip</button>
+                    </div>
+                    <div class="card">
+                        <h2>📂 Bosmath Arsip </h2>
+                        <div id="daftar-arsip"></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -88,16 +124,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, updateDoc, onSnapshot, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD0VI7Ai1oRgIwl2UXNV3tE4jbYZO9XJpY",
-            authDomain: "learninp.firebaseapp.com",
-            projectId: "learninp",
-            storageBucket: "learninp.firebasestorage.app",
-            messagingSenderId: "283126632684",
-            appId: "1:283126632684:web:925104a875661b2f5f95c9"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const firebaseConfig = { apiKey: "AIzaSyD0VI7Ai1oRgIwl2UXNV3tE4jbYZO9XJpY", authDomain: "learninp.firebaseapp.com", projectId: "learninp", storageBucket: "learninp.firebasestorage.app", messagingSenderId: "283126632684", appId: "1:283126632684:web:925104a875661b2f5f95c9" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
         let sesi = JSON.parse(localStorage.getItem('sesiPinkEdu'));
         if (!sesi || sesi.role !== 'guru') location.href = 'index.html';
@@ -107,8 +135,9 @@
 
         let kelasAktif = '';
         let dataGlobal = {};
+        let dataArsipPribadi = [];
 
-        // Pantau Kelas
+        // --- PANTAU KELAS ---
         onSnapshot(query(collection(db, "kelas"), where("guruId", "==", sesi.uid)), (snap) => {
             const tabs = document.getElementById('container-kelas');
             tabs.innerHTML = '<button class="tab-btn" onclick="buatKelasBaru()">+ Buat Kelas Baru</button>';
@@ -120,9 +149,50 @@
                 btn.onclick = () => bukaKelas(doc.id);
                 tabs.prepend(btn);
             });
-            if(kelasAktif) bukaKelas(kelasAktif);
+            if(kelasAktif && document.getElementById('area-kerja').style.display === 'block') bukaKelas(kelasAktif);
         });
 
+        // --- PANTAU ARSIP PRIBADI ---
+        onSnapshot(doc(db, "arsip_guru", sesi.uid), (snap) => {
+            if(snap.exists()){
+                dataArsipPribadi = snap.data().items || [];
+            } else {
+                dataArsipPribadi = [];
+            }
+            renderArsip();
+        });
+
+        // --- NAVIGASI TAMPILAN ---
+        window.bukaArsipPribadi = () => {
+            document.getElementById('area-kerja').style.display = 'none';
+            document.getElementById('card-siswa').style.display = 'none';
+            document.getElementById('area-arsip').style.display = 'block';
+            
+            // Hapus status aktif dari semua tombol kelas
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        };
+
+        function bukaKelas(id) {
+            kelasAktif = id;
+            document.getElementById('area-arsip').style.display = 'none';
+            document.getElementById('area-kerja').style.display = 'block';
+            document.getElementById('card-siswa').style.display = 'block';
+            
+            document.getElementById('display-kelas').innerText = dataGlobal[id].namaKelas;
+            document.getElementById('display-kode').innerText = id;
+            
+            // Perbarui tombol aktif
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.innerText === dataGlobal[id].namaKelas) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            renderSiswa(dataGlobal[id].siswaGabung || []);
+            renderPost(dataGlobal[id].postingan || []);
+            renderTugasSiswa(dataGlobal[id].tugasTerkumpul || []);
+        }
+
+        // --- LOGIKA KELAS ---
         window.buatKelasBaru = async () => {
             let n = prompt("Nama Kelas Baru:");
             if (n) {
@@ -132,28 +202,18 @@
         };
 
         window.hapusKelasTotal = async () => {
-            if(confirm("Hapus seluruh kelas dan semua datanya?")) {
+            if(confirm("Hapus seluruh kelas?")) {
                 await deleteDoc(doc(db, "kelas", kelasAktif));
-                location.reload();
+                kelasAktif = '';
+                document.getElementById('area-kerja').style.display = 'none';
+                document.getElementById('card-siswa').style.display = 'none';
             }
         };
 
-        function bukaKelas(id) {
-            kelasAktif = id;
-            document.getElementById('area-kerja').style.display = 'block';
-            document.getElementById('card-siswa').style.display = 'block';
-            document.getElementById('display-kelas').innerText = dataGlobal[id].namaKelas;
-            document.getElementById('display-kode').innerText = id;
-            renderSiswa(dataGlobal[id].siswaGabung || []);
-            renderPost(dataGlobal[id].postingan || []);
-            renderTugasSiswa(dataGlobal[id].tugasTerkumpul || []);
-        }
-
-        // --- SISTEM POSTING & HAPUS MATERI ---
         window.kirimPostingan = async () => {
             const btn = document.getElementById('btn-kirim');
             const fileInput = document.getElementById('input-file');
-            btn.innerText = "⏳ Mengunggah..."; btn.disabled = true;
+            btn.innerText = "⏳ Sedang Mengirim..."; btn.disabled = true;
             let fileUrl = "";
 
             if (fileInput.files.length > 0) {
@@ -169,15 +229,15 @@
             try {
                 let newPost = { 
                     id: Date.now(),
+                    tipe: document.getElementById('input-tipe').value,
                     judul: document.getElementById('input-judul').value, 
                     deskripsi: document.getElementById('input-deskripsi').value, 
-                    link: fileUrl,
-                    namaFile: fileInput.files[0] ? fileInput.files[0].name : ""
+                    link: fileUrl
                 };
                 await updateDoc(doc(db, "kelas", kelasAktif), { postingan: [newPost, ...dataGlobal[kelasAktif].postingan] });
                 document.getElementById('input-judul').value = ""; document.getElementById('input-deskripsi').value = ""; fileInput.value = "";
             } catch (e) { alert(e.message); }
-            finally { btn.innerText = "🚀 Kirim ke Cloud"; btn.disabled = false; }
+            finally { btn.innerText = "🚀 Kirim ke Kelas"; btn.disabled = false; }
         };
 
         window.hapusMateri = async (postId) => {
@@ -187,22 +247,43 @@
             }
         };
 
-        // --- SISTEM PENILAIAN TUGAS ---
         window.beriNilai = async (index) => {
             let nilaiVal = document.getElementById(`nilai-${index}`).value;
-            if(nilaiVal < 0 || nilaiVal > 100) return alert("Nilai harus 0 - 100");
-            
             let listTugas = [...dataGlobal[kelasAktif].tugasTerkumpul];
             listTugas[index].nilai = nilaiVal;
-
             await updateDoc(doc(db, "kelas", kelasAktif), { tugasTerkumpul: listTugas });
-            alert("Nilai berhasil disimpan!");
+            alert("Nilai disimpan!");
+        };
+
+        // --- LOGIKA ARSIP PRIBADI ---
+        window.simpanArsip = async () => {
+            let judul = document.getElementById('arsip-judul').value;
+            let link = document.getElementById('arsip-link').value;
+            
+            if(!judul || !link) return alert("Judul dan Link Google Drive wajib diisi!");
+
+            let newItem = { id: Date.now(), judul: judul, link: link };
+            let newList = [newItem, ...dataArsipPribadi];
+
+            // Simpan ke database terpisah khusus guru ini
+            await setDoc(doc(db, "arsip_guru", sesi.uid), { items: newList }, { merge: true });
+            
+            document.getElementById('arsip-judul').value = "";
+            document.getElementById('arsip-link').value = "";
+            alert("Tersimpan di Arsip Pribadi!");
+        };
+
+        window.hapusArsip = async (idArsip) => {
+            if(confirm("Hapus arsip ini?")) {
+                let newList = dataArsipPribadi.filter(item => item.id !== idArsip);
+                await setDoc(doc(db, "arsip_guru", sesi.uid), { items: newList }, { merge: true });
+            }
         };
 
         // --- RENDER TAMPILAN ---
         function renderSiswa(list) {
             const area = document.getElementById('list-siswa-kelas');
-            area.innerHTML = list.length ? "" : "<p style='font-size:0.8em; color:#999;'>Belum ada siswa gabung.</p>";
+            area.innerHTML = list.length ? "" : "<p style='font-size:0.8em; color:#999;'>Belum ada siswa.</p>";
             list.forEach(s => area.innerHTML += `<span class="siswa-badge">👤 ${s}</span>`);
         }
 
@@ -210,11 +291,13 @@
             const area = document.getElementById('daftar-postingan');
             area.innerHTML = list.length ? "" : "<p style='color:#999;'>Belum ada materi.</p>";
             list.forEach(p => {
+                let tipeBadge = `<span class="badge-tipe bg-${p.tipe}">${p.tipe}</span>`;
                 area.innerHTML += `
                 <div class="post-item">
                     <button class="btn-hapus-post" onclick="hapusMateri(${p.id})">🗑️</button>
-                    <h4 style="color:#d81b60;">${p.judul}</h4>
-                    <p style="font-size:0.9em; margin: 5px 0;">${p.deskripsi}</p>
+                    ${tipeBadge}
+                    <h4 style="color:#d81b60; margin-top:5px;">${p.judul}</h4>
+                    <p style="font-size:0.8em; margin: 5px 0;">${p.deskripsi}</p>
                     ${p.link ? `<a href="${p.link}" target="_blank" class="btn-download">📥 Lihat File</a>` : ''}
                 </div>`;
             });
@@ -222,20 +305,27 @@
 
         function renderTugasSiswa(list) {
             const area = document.getElementById('daftar-tugas-masuk');
-            area.innerHTML = list.length ? "" : "<p style='color:#999; text-align:center;'>Belum ada tugas terkumpul.</p>";
+            area.innerHTML = list.length ? "" : "<p style='color:#999;'>Kosong.</p>";
             list.forEach((t, i) => {
                 area.innerHTML += `
                 <div class="post-item">
-                    <div style="display:flex; justify-content:space-between;">
-                        <b>👤 ${t.namaSiswa}</b>
-                        <a href="${t.link}" target="_blank" style="color:#4caf50; font-weight:bold; text-decoration:none; font-size:0.8em;">📄 Buka Tugas</a>
-                    </div>
-                    <p style="font-size:0.8em; color:#666; margin-top:5px;">Materi: ${t.judulTugas}</p>
-                    <div style="margin-top:10px; border-top: 1px solid #eee; padding-top:10px;">
-                        <label style="font-size:0.8em;">Nilai (0-100):</label>
-                        <input type="number" id="nilai-${i}" class="nilai-input" value="${t.nilai || ''}" placeholder="0">
-                        <button class="btn-nilai" onclick="beriNilai(${i})">Simpan</button>
-                    </div>
+                    <b>👤 ${t.namaSiswa}</b> - <a href="${t.link}" target="_blank">Buka Tugas</a>
+                    <p style="font-size:0.8em; color:#666;">Materi: ${t.judulTugas}</p>
+                    <input type="number" id="nilai-${i}" class="nilai-input" value="${t.nilai || ''}" style="width:60px; padding:5px; border-radius:5px; border:1px solid #ccc;">
+                    <button class="btn-nilai" onclick="beriNilai(${i})" style="background:#ff4081; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Simpan</button>
+                </div>`;
+            });
+        }
+
+        function renderArsip() {
+            const area = document.getElementById('daftar-arsip');
+            area.innerHTML = dataArsipPribadi.length ? "" : "<p style='color:#999;'>Belum ada arsip tersimpan.</p>";
+            dataArsipPribadi.forEach(item => {
+                area.innerHTML += `
+                <div class="post-item" style="border-left: 5px solid #2196f3;">
+                    <button class="btn-hapus-post" onclick="hapusArsip(${item.id})">🗑️</button>
+                    <h4 style="color:#1976d2; margin-top:5px;">${item.judul}</h4>
+                    <a href="${item.link}" target="_blank" class="btn-download" style="background: #2196f3; margin-top: 10px;">📁 Buka Drive</a>
                 </div>`;
             });
         }
