@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOSMATH - Login & Daftar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .auth-container { max-width: 400px; width: 100%; text-align: center; padding: 20px; }
+        .card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; box-shadow: 0 8px 32px rgba(255, 105, 180, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); }
+        h1 { color: #d81b60; margin-bottom: 5px; font-size: 1.8rem; }
+        p.subtitle { color: #880e4f; margin-bottom: 25px; font-size: 0.9em; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #880e4f; font-size: 0.85em; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #f8bbd0; outline: none; }
+        .btn { width: 100%; background: #ff4081; color: white; padding: 12px; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn:hover { background: #c51162; }
+        .toggle-link { color: #d81b60; cursor: pointer; text-decoration: underline; font-size: 0.85em; margin-top: 15px; display: inline-block; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="Lauv - I Like Me Better [Official Audio].mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="auth-container">
+        <div class="card" id="login-box">
+            <h1>✨Bosmath✨</h1>
+            <p class="subtitle">Cloud BosMath Portal </p>
+            <form id="form-login">
+                <div class="form-group"><label>Email</label><input type="email" id="loginEmail" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="loginPassword" required></div>
+                <button type="submit" class="btn" id="btn-login">Masuk</button>
+            </form>
+            <p class="toggle-link" id="link-register">Belum punya akun? Daftar di sini</p>
+        </div>
+
+        <div class="card hidden" id="register-box">
+            <h1>Daftar Akun</h1>
+            <p class="subtitle">Bergabung dengan BOSMATH</p>
+            <form id="form-register">
+                <div class="form-group"><label>Nama Lengkap</label><input type="text" id="regNama" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="regEmail" required></div>
+                <div class="form-group">
+                    <label>Daftar Sebagai</label>
+                    <select id="regRole" required><option value="siswa">Siswa</option><option value="guru">Guru</option></select>
+                </div>
+                <div class="form-group"><label>Password</label><input type="password" id="regPassword" required minlength="6"></div>
+                <button type="submit" class="btn" id="btn-register">Daftar Sekarang</button>
+            </form>
+            <p class="toggle-link" id="link-login">Sudah punya akun? Login di sini</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyD0VI7Ai1oRgIwl2UXNV3tE4jbYZO9XJpY", authDomain: "learninp.firebaseapp.com", projectId: "learninp", storageBucket: "learninp.firebasestorage.app", messagingSenderId: "283126632684", appId: "1:283126632684:web:925104a875661b2f5f95c9" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- SISTEM MUSIK (PERBAIKAN) ---
+        const music = document.getElementById('bgMusic');
+        music.volume = 0.1; 
+        let isMusicReady = false;
+
+        document.body.addEventListener('click', () => {
+            if (!isMusicReady) {
+                // Menunggu 1 detik baru bunyi (Sesuai Permintaan)
+                setTimeout(() => {
+                    music.play().then(() => {
+                        isMusicReady = true;
+                    }).catch(e => console.log("Gagal putar musik."));
+                }, 1000); 
+            }
+        }, { once: true });
+
+        // --- SISTEM AUTH ---
+        document.getElementById('link-register').onclick = () => { document.getElementById('login-box').classList.add('hidden'); document.getElementById('register-box').classList.remove('hidden'); };
+        document.getElementById('link-login').onclick = () => { document.getElementById('register-box').classList.add('hidden'); document.getElementById('login-box').classList.remove('hidden'); };
+
+        document.getElementById('form-register').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-register'); btn.innerText = "Proses..."; btn.disabled = true;
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, document.getElementById('regEmail').value, document.getElementById('regPassword').value);
+                await setDoc(doc(db, "users", cred.user.uid), { nama: document.getElementById('regNama').value, role: document.getElementById('regRole').value });
+                alert("Berhasil Daftar!"); location.reload();
+            } catch (err) { alert(err.message); } finally { btn.disabled = false; }
+        };
+
+        document.getElementById('form-login').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login'); btn.innerText = "Mengecek..."; btn.disabled = true;
+            try {
+                const cred = await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+                const snap = await getDoc(doc(db, "users", cred.user.uid));
+                if (snap.exists()) {
+                    localStorage.setItem('sesiPinkEdu', JSON.stringify({ uid: cred.user.uid, nama: snap.data().nama, role: snap.data().role }));
+                    location.href = snap.data().role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
+                }
+            } catch (err) { alert("Email/Password Salah!"); } finally { btn.disabled = false; }
+        };
+    </script>
+</body>
+</html>
