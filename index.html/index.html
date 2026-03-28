@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOSMATH KKN - Portal Belajar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #fafafa; color: #333; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* --- 1. HERO SECTION (Latar Belakang Slider 16:9 Penuh) --- */
+        .hero { 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 16 / 9; 
+            max-height: 90vh; 
+            overflow: hidden; 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .background-slider { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; }
+        .slide.aktif { opacity: 1; }
+        
+        .bg-1 { background-image: url('dok1.jpg'); }
+        .bg-2 { background-image: url('dok2.jpg'); }
+        .bg-3 { background-image: url('dok3.jpg'); }
+
+        /* SENTUHAN PINK DI OVERLAY GELAP */
+        .dark-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(135deg, rgba(216, 27, 96, 0.4) 0%, rgba(0,0,0,0.8) 100%); 
+            z-index: 2; 
+        }
+
+        /* --- KONTEN HERO (TEKS & TOMBOL AWAL) --- */
+        .hero-content { 
+            position: relative; z-index: 3; text-align: center; color: white; max-width: 800px; padding: 20px;
+        }
+        .hero-content h1 { font-size: 4rem; font-weight: 800; line-height: 1.1; margin-bottom: 20px; text-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
+        .hero-content p { font-size: 1.2rem; line-height: 1.6; font-style: italic; text-shadow: 1px 1px 5px rgba(0,0,0,0.3); margin-bottom: 30px; }
+        
+        .btn-masuk-utama {
+            background: #ff4081; color: white; padding: 15px 40px; border-radius: 30px; border: none; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(255, 64, 129, 0.4);
+        }
+        .btn-masuk-utama:hover { background: #d81b60; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255, 64, 129, 0.6); }
+
+        /* --- MODAL POPUP LOGIN/REGISTER --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center;
+            z-index: 9999; backdrop-filter: blur(5px); opacity: 0; pointer-events: none; transition: 0.3s ease;
+        }
+        .modal-overlay.aktif { opacity: 1; pointer-events: all; }
+
+        .auth-container { max-width: 400px; width: 90%; text-align: center; position: relative; transform: translateY(-50px); transition: 0.4s ease; }
+        .modal-overlay.aktif .auth-container { transform: translateY(0); }
+
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; color: #880e4f; cursor: pointer; font-weight: bold; z-index: 10; }
+        .close-btn:hover { color: #ff4081; }
+
+        .auth-card { background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 2px solid #ff4081; }
+        .auth-card h2 { color: #d81b60; margin-bottom: 5px; font-size: 2rem; font-weight: 700; }
+        .auth-card p.subtitle { color: #880e4f; margin-bottom: 25px; font-size: 0.9rem; }
+        
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #880e4f; font-size: 0.8rem; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #f8bbd0; outline: none; background: #fffafb; }
+        
+        .btn-submit { width: 100%; background: #ff4081; color: white; padding: 15px; border-radius: 30px; border: none; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.3s; font-size: 1rem; box-shadow: 0 4px 10px rgba(255, 64, 129, 0.2); }
+        .btn-submit:hover { background: #c51162; transform: translateY(-2px); }
+        .toggle-link { color: #d81b60; cursor: pointer; text-decoration: underline; font-size: 0.8rem; margin-top: 15px; display: inline-block; }
+
+        .hidden { display: none !important; }
+
+        /* --- 2. GALERI INFO (GAYA GRID BERSIH) --- */
+        .info-galeri { padding: 60px 20px; text-align: center; background: #fff0f5; /* Latar belakang pink sangat muda */ flex-grow: 1; }
+        .info-galeri h2 { font-size: 2.2rem; color: #d81b60; margin-bottom: 40px; font-weight: 700; }
+        
+        .grid-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto; }
+        
+        .card-info { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; text-align: left; border-bottom: 4px solid transparent; }
+        .card-info:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(255, 64, 129, 0.15); border-bottom: 4px solid #ff4081; }
+        .card-info img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 10px; margin-bottom: 15px; }
+        .card-info h4 { color: #d81b60; font-size: 1.1rem; margin-bottom: 10px; font-weight: 600; }
+        .card-info p { color: #555; font-size: 0.9rem; line-height: 1.6; }
+
+        /* Responsif untuk HP */
+        @media (max-width: 900px) {
+            .hero { aspect-ratio: 1 / 1.2; max-height: none; }
+            .hero-content h1 { font-size: 2.5rem; }
+            .hero-content p { font-size: 1rem; }
+            .auth-card { padding: 20px; }
+            .grid-wrapper { gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="Lauv - I Like Me Better [Official Audio].mp3" type="audio/mpeg">
+    </audio>
+
+    <section class="hero">
+        <div class="background-slider">
+            <div class="slide bg-1 aktif"></div>
+            <div class="slide bg-2"></div>
+            <div class="slide bg-3"></div>
+        </div>
+        
+        <div class="dark-overlay"></div>
+        
+        <div class="hero-content">
+            <h1>BOSMATH KKN Portal</h1>
+            <p>"kata kata bijak disini."<br>— Pembelajaran matematika digital hasil pengabdian KKN —</p>
+            <button class="btn-masuk-utama" onclick="bukaModal()">Masuk / Buat Akun</button>
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="auth-modal">
+        <div class="auth-container">
+            <div class="close-btn" onclick="tutupModal()">✕</div>
+            
+            <div class="auth-card">
+                <div id="login-box">
+                    <h2>Selamat Datang!</h2>
+                    <p class="subtitle">Silakan login untuk mengakses modul.</p>
+                    <form id="form-login">
+                        <div class="form-group"><label>Email</label><input type="email" id="loginEmail" required placeholder="email@gmail.com"></div>
+                        <div class="form-group"><label>Password</label><input type="password" id="loginPassword" required placeholder="******"></div>
+                        <button type="submit" class="btn-submit" id="btn-login">Mulai Belajar</button>
+                    </form>
+                    <p class="toggle-link" onclick="gantiKeDaftar()">Belum punya akun? Daftar di sini</p>
+                </div>
+
+                <div id="register-box" class="hidden">
+                    <h2>Buat Akun</h2>
+                    <p class="subtitle">Gabung bersama BOSMATH KKN.</p>
+                    <form id="form-register">
+                        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="regNama" required placeholder="Nama Anda"></div>
+                        <div class="form-group"><label>Email</label><input type="email" id="regEmail" required placeholder="email@gmail.com"></div>
+                        <div class="form-group">
+                            <label>Peran</label>
+                            <select id="regRole" required><option value="siswa">Siswa / Peserta</option><option value="guru">Guru / Tutor</option></select>
+                        </div>
+                        <div class="form-group"><label>Password</label><input type="password" id="regPassword" required minlength="6" placeholder="Buat sandi"></div>
+                        <button type="submit" class="btn-submit" id="btn-register">Daftar Sekarang</button>
+                    </form>
+                    <p class="toggle-link" onclick="gantiKeLogin()">Sudah punya akun? Login di sini</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="info-galeri">
+        <h2>Dokumentasi Kegiatan KKN</h2>
+        
+        <div class="grid-wrapper">
+            <div class="card-info">
+                <img src="dok1.jpg" alt="Kegiatan 1">
+                <h4>Penerapan BOSMATH di Kelas</h4>
+                <p>Memvisualisasikan konsep geometri kompleks menggunakan fitur interaktif BOSMATH.</p>
+            </div>
+            <div class="card-info">
+                <img src="dok2.jpg" alt="Kegiatan 2">
+                <h4>Pelatihan Guru Kreatif</h4>
+                <p>Berbagi metode mengajar matematika berbasis teknologi kepada para guru.</p>
+            </div>
+            <div class="card-info">
+                <img src="dok3.jpg" alt="Kegiatan 3">
+                <h4>Evaluasi Mandiri Siswa</h4>
+                <p>Siswa menguji pemahamannya melalui fitur Bank Soal dan Quizizz di portal.</p>
+            </div>
+        </div>
+    </section>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyD0VI7Ai1oRgIwl2UXNV3tE4jbYZO9XJpY", authDomain: "learninp.firebaseapp.com", projectId: "learninp", storageBucket: "learninp.firebasestorage.app", messagingSenderId: "283126632684", appId: "1:283126632684:web:925104a875661b2f5f95c9" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- SISTEM MUSIK BACKGROUND ---
+        const music = document.getElementById('bgMusic');
+        music.volume = 0.15; 
+        let isMusicReady = false;
+        document.body.addEventListener('click', () => {
+            if (!isMusicReady) {
+                setTimeout(() => { music.play().then(() => { isMusicReady = true; }).catch(e=>e); }, 500);
+            }
+        }, { once: true });
+
+        // --- SISTEM AUTO SLIDER BACKGROUND ---
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+        setInterval(() => {
+            slides[currentSlide].classList.remove('aktif');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('aktif');
+        }, 4000); 
+
+        // --- LOGIKA MODAL POPUP & FORM ---
+        const modal = document.getElementById('auth-modal');
+        const loginBox = document.getElementById('login-box');
+        const registerBox = document.getElementById('register-box');
+        
+        window.bukaModal = () => { modal.classList.add('aktif'); gantiKeLogin(); };
+        window.tutupModal = () => { modal.classList.remove('aktif'); };
+        
+        window.gantiKeLogin = () => { registerBox.classList.add('hidden'); loginBox.classList.remove('hidden'); };
+        window.gantiKeDaftar = () => { loginBox.classList.add('hidden'); registerBox.classList.remove('hidden'); };
+
+        // --- SISTEM FIREBASE AUTH ---
+        document.getElementById('form-register').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-register'); btn.innerText = "Mendaftarkan..."; btn.disabled = true;
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, document.getElementById('regEmail').value, document.getElementById('regPassword').value);
+                await setDoc(doc(db, "users", cred.user.uid), { nama: document.getElementById('regNama').value, role: document.getElementById('regRole').value });
+                alert("Berhasil Daftar!"); location.reload();
+            } catch (err) { alert(err.message); } finally { btn.disabled = false; btn.innerText = "Daftar Sekarang"; }
+        };
+
+        document.getElementById('form-login').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login'); btn.innerText = "Mengecek..."; btn.disabled = true;
+            try {
+                const cred = await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+                const snap = await getDoc(doc(db, "users", cred.user.uid));
+                if (snap.exists()) {
+                    localStorage.setItem('sesiBosmath', JSON.stringify({ uid: cred.user.uid, nama: snap.data().nama, role: snap.data().role }));
+                    location.href = snap.data().role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
+                }
+            } catch (err) { alert("Email/Password Salah!"); } finally { btn.disabled = false; btn.innerText = "Mulai Belajar"; }
+        };
+    </script>
+</body>
+</html>
