@@ -69,7 +69,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // TAMBAHAN: Import collection, query, dan where untuk baca data dari cloud
+        import { getFirestore, doc, getDoc, onSnapshot, updateDoc, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyD0VI7Ai1oRgIwl2UXNV3tE4jbYZO9XJpY", authDomain: "learninp.firebaseapp.com", projectId: "learninp", storageBucket: "learninp.firebasestorage.app", messagingSenderId: "283126632684", appId: "1:283126632684:web:925104a875661b2f5f95c9" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
@@ -78,10 +79,33 @@
         if (!sesi || sesi.role !== 'siswa') location.href = 'index.html';
         document.getElementById('nama-siswa').innerText = sesi.nama;
 
-        window.prosesLogout = () => { localStorage.clear(); location.href = 'index.html'; };
+        // PERBAIKAN LOGOUT: Hanya menghapus sesi user, bukan menghapus seluruh memori HP
+        window.prosesLogout = () => { localStorage.removeItem('sesiBosmath'); location.href = 'index.html'; };
 
-        let listKelas = JSON.parse(localStorage.getItem('myClasses_' + sesi.uid)) || [];
+        let listKelas = [];
+        let dataGlobal = {};
         let kelasAktifID = '';
+
+        // --- FITUR BARU: PANTAU KELAS DARI CLOUD FIREBASE ---
+        // Sistem ini akan mencari kelas di mana nama siswa ini terdaftar
+        onSnapshot(query(collection(db, "kelas"), where("siswaGabung", "array-contains", sesi.nama)), (snap) => {
+            listKelas = [];
+            dataGlobal = {};
+            
+            snap.forEach(doc => {
+                listKelas.push(doc.id);
+                dataGlobal[doc.id] = doc.data();
+            });
+            
+            renderTabs();
+            
+            // Jika kelas yang sedang dibuka masih ada, perbarui tampilannya
+            if (kelasAktifID && listKelas.includes(kelasAktifID)) {
+                bukaKonten(kelasAktifID);
+            } else {
+                document.getElementById('area-materi').style.display = 'none';
+            }
+        });
 
         window.gabungKelas = async () => {
             let id = document.getElementById('input-kode').value.toUpperCase().trim();
@@ -93,23 +117,19 @@
                 const snap = await getDoc(docRef);
 
                 if (snap.exists()) {
-                    
-                    // --- KODE KEAMANAN BARU: CEK KELAS DIKUNCI ATAU TIDAK ---
                     if (snap.data().isLocked) {
                         return alert("❌ MAAF! Kelas ini sudah DIKUNCI oleh Guru. Hubungi guru Anda untuk membukanya sementara.");
                     }
-                    // --------------------------------------------------------
 
                     let listSiswaCloud = snap.data().siswaGabung || [];
                     if(!listSiswaCloud.includes(sesi.nama)) {
                         listSiswaCloud.push(sesi.nama);
                         await updateDoc(docRef, { siswaGabung: listSiswaCloud });
                     }
-
-                    listKelas.push(id);
-                    localStorage.setItem('myClasses_' + sesi.uid, JSON.stringify(listKelas));
+                    
                     alert("Berhasil Gabung!");
-                    location.reload(); 
+                    document.getElementById('input-kode').value = ''; 
+                    // Tidak perlu reload, sistem cloud akan memunculkan tab otomatis
                 } else { alert("Kode Kelas Tidak Ditemukan!"); }
             } catch (err) { alert("Gagal terhubung ke server!"); }
         };
@@ -123,13 +143,9 @@
                         let listSiswaCloud = snap.data().siswaGabung || [];
                         let newListSiswa = listSiswaCloud.filter(nama => nama !== sesi.nama);
                         await updateDoc(docRef, { siswaGabung: newListSiswa });
+                        alert("Berhasil keluar dari kelas.");
+                        // Tidak perlu reload, sistem cloud akan menghapus tab otomatis
                     }
-
-                    listKelas = listKelas.filter(id => id !== kelasAktifID);
-                    localStorage.setItem('myClasses_' + sesi.uid, JSON.stringify(listKelas));
-                    
-                    alert("Berhasil keluar dari kelas.");
-                    location.reload(); 
                 } catch (e) {
                     alert("Terjadi kesalahan saat keluar dari kelas.");
                 }
@@ -152,19 +168,12 @@
             kelasAktifID = id;
             renderTabs();
             document.getElementById('area-materi').style.display = 'block';
-            onSnapshot(doc(db, "kelas", id), (snap) => {
-                if(snap.exists()) {
-                    const data = snap.data();
-                    document.getElementById('judul-kelas-aktif').innerText = data.namaKelas;
-                    renderDaftarMateri(data.postingan || [], data.tugasTerkumpul || []);
-                } else {
-                    listKelas = listKelas.filter(k => k !== id);
-                    localStorage.setItem('myClasses_' + sesi.uid, JSON.stringify(listKelas));
-                    document.getElementById('area-materi').style.display = 'none';
-                    renderTabs();
-                    alert("Kelas ini telah dihapus oleh Guru.");
-                }
-            });
+            
+            const data = dataGlobal[id];
+            if(data) {
+                document.getElementById('judul-kelas-aktif').innerText = data.namaKelas;
+                renderDaftarMateri(data.postingan || [], data.tugasTerkumpul || []);
+            }
         }
 
         window.kumpulTugas = async (postId, judulTugas) => {
