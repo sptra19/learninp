@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STUDENT BOSMATH- Dashboard Siswa</title>
+    <title>STUDENT BOSMATH - Dashboard Siswa</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
@@ -12,7 +12,7 @@
         .card { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(255, 105, 180, 0.1); border: 1px solid #ffb6c1; margin-bottom: 20px; }
         h2 { color: #d81b60; margin-bottom: 15px; font-size: 1.2rem; border-bottom: 1px dashed #ffb6c1; padding-bottom: 5px; }
         .sidebar-title { font-size: 1.5rem; color: #d81b60; font-weight: bold; text-align: center; margin-bottom: 20px; }
-        .nav-btn { display: block; width: 100%; background: #ff4081; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-bottom: 10px; font-weight: bold; transition: 0.3s; }
+        .nav-btn { display: block; width: 100%; background: #ff4081; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-bottom: 10px; font-weight: bold; transition: 0.3s; text-align: center; text-decoration: none;}
         .nav-btn:hover { filter: brightness(0.9); transform: translateY(-2px); }
         .btn-logout { width: 100%; background: #c62828; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-top: 20px; font-weight: bold; }
         .class-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
@@ -26,6 +26,12 @@
         .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; }
         .nilai-box { position: absolute; top: 20px; right: 20px; background: #ff4081; color: white; padding: 5px 15px; border-radius: 10px; font-weight: bold; }
         .box-kumpul { background: #ffebee; padding: 15px; border-radius: 10px; margin-top: 15px; border: 2px dashed #ff4081; }
+        
+        /* Responsif HP */
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+            .header-kelas { flex-direction: column; gap: 15px; text-align: center; }
+        }
     </style>
 </head>
 <body>
@@ -87,6 +93,13 @@
                 const snap = await getDoc(docRef);
 
                 if (snap.exists()) {
+                    
+                    // --- KODE KEAMANAN BARU: CEK KELAS DIKUNCI ATAU TIDAK ---
+                    if (snap.data().isLocked) {
+                        return alert("❌ MAAF! Kelas ini sudah DIKUNCI oleh Guru. Hubungi guru Anda untuk membukanya sementara.");
+                    }
+                    // --------------------------------------------------------
+
                     let listSiswaCloud = snap.data().siswaGabung || [];
                     if(!listSiswaCloud.includes(sesi.nama)) {
                         listSiswaCloud.push(sesi.nama);
@@ -101,11 +114,9 @@
             } catch (err) { alert("Gagal terhubung ke server!"); }
         };
 
-        // --- FUNGSI KELUAR KELAS (HAPUS KELAS) ---
         window.keluarKelas = async () => {
             if(confirm("Yakin ingin keluar dari kelas ini? Semua tugas yang sudah dikumpul akan tetap ada di guru, tapi Anda tidak bisa melihat kelas ini lagi.")) {
                 try {
-                    // 1. Hapus nama siswa dari database guru (opsional agar guru tahu siswa keluar)
                     const docRef = doc(db, "kelas", kelasAktifID);
                     const snap = await getDoc(docRef);
                     if (snap.exists()) {
@@ -114,12 +125,11 @@
                         await updateDoc(docRef, { siswaGabung: newListSiswa });
                     }
 
-                    // 2. Hapus kelas dari memori HP siswa
                     listKelas = listKelas.filter(id => id !== kelasAktifID);
                     localStorage.setItem('myClasses_' + sesi.uid, JSON.stringify(listKelas));
                     
                     alert("Berhasil keluar dari kelas.");
-                    location.reload(); // Refresh halaman
+                    location.reload(); 
                 } catch (e) {
                     alert("Terjadi kesalahan saat keluar dari kelas.");
                 }
@@ -148,7 +158,6 @@
                     document.getElementById('judul-kelas-aktif').innerText = data.namaKelas;
                     renderDaftarMateri(data.postingan || [], data.tugasTerkumpul || []);
                 } else {
-                    // Jika kelas dihapus oleh guru, keluarkan siswa otomatis
                     listKelas = listKelas.filter(k => k !== id);
                     localStorage.setItem('myClasses_' + sesi.uid, JSON.stringify(listKelas));
                     document.getElementById('area-materi').style.display = 'none';
@@ -191,6 +200,24 @@
             finally { btn.innerText = "Kirim ke Guru"; btn.disabled = false; }
         };
 
+        window.batalkanTugas = async (postId) => {
+            if(!confirm("Yakin ingin membatalkan kiriman tugas ini? File akan dihapus dari meja guru.")) return;
+            
+            try {
+                const docRef = doc(db, "kelas", kelasAktifID);
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    let listTugas = snap.data().tugasTerkumpul || [];
+                    let listTugasBaru = listTugas.filter(t => !(t.postId === postId && t.namaSiswa === sesi.nama));
+                    
+                    await updateDoc(docRef, { tugasTerkumpul: listTugasBaru });
+                    alert("Tugas berhasil dibatalkan! Silakan upload file yang benar.");
+                }
+            } catch (err) {
+                alert("Gagal membatalkan tugas. Periksa koneksi.");
+            }
+        };
+
         function renderDaftarMateri(materi, tugasSiswa) {
             const area = document.getElementById('daftar-materi');
             area.innerHTML = materi.length ? "" : "<p style='text-align:center; color:#999; margin-top:20px;'>Belum ada materi dari guru.</p>";
@@ -204,15 +231,29 @@
                 if (p.tipe === 'game') {
                     actionHtml = `<br><a href="${p.deskripsi}" target="_blank" class="nav-btn" style="display:inline-block; width:auto; padding:8px 25px; margin-top:10px;">🎮 Mainkan Game / Kuis</a>`;
                 } else if (p.tipe === 'materi' || p.tipe === 'soal') {
-                    actionHtml = `
-                    <div class="box-kumpul">
-                        <p style="font-size:0.85em; font-weight:bold; color:#d81b60; margin-bottom:5px;">📤 Kumpulkan Tugas Di Sini:</p>
-                        ${sudahKumpul ? 
-                            `<p style="color:#4caf50; font-weight:bold;">✅ Tugas sudah dikumpulkan</p>` : 
-                            `<input type="file" id="file-${p.id}" style="margin-bottom:10px; display:block; width:100%;">
-                             <button class="nav-btn" onclick="kumpulTugas(${p.id}, '${p.judul}')" id="btn-${p.id}" style="width:auto; padding:8px 25px;">Kirim ke Guru</button>`
-                        }
-                    </div>`;
+                    
+                    if (sudahKumpul) {
+                        actionHtml = `
+                        <div class="box-kumpul">
+                            <p style="color:#4caf50; font-weight:bold; margin-bottom:10px;">✅ Tugas sudah dikumpulkan ke Guru</p>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                                <a href="${sudahKumpul.link}" target="_blank" class="nav-btn" style="width:auto; padding:6px 15px; background:#2196f3; font-size:0.85em; margin:0;">👀 Lihat File Saya</a>
+                                
+                                ${sudahKumpul.nilai ? 
+                                    `<span style="color:#d81b60; font-weight:bold; font-size:0.85em;">🔒 Sudah dinilai, file tidak bisa ditarik.</span>` 
+                                    : 
+                                    `<button onclick="batalkanTugas(${p.id})" class="nav-btn" style="width:auto; padding:6px 15px; background:#e53935; font-size:0.85em; margin:0;">🗑️ Tarik Balik Tugas</button>`
+                                }
+                            </div>
+                        </div>`;
+                    } else {
+                        actionHtml = `
+                        <div class="box-kumpul">
+                            <p style="font-size:0.85em; font-weight:bold; color:#d81b60; margin-bottom:5px;">📤 Kumpulkan Tugas Di Sini:</p>
+                            <input type="file" id="file-${p.id}" style="margin-bottom:10px; display:block; width:100%;">
+                            <button class="nav-btn" onclick="kumpulTugas(${p.id}, '${p.judul}')" id="btn-${p.id}" style="width:auto; padding:8px 25px;">Kirim ke Guru</button>
+                        </div>`;
+                    }
                 }
 
                 area.innerHTML += `
@@ -221,7 +262,7 @@
                         <span class="badge-tipe ${badgeClass}">${p.tipe}</span>
                         <h3 style="color:#d81b60; margin-top:10px;">${p.judul}</h3>
                         <p style="font-size:0.9em; margin: 10px 0; color:#555; white-space:pre-wrap;">${p.tipe === 'game' ? 'Silakan klik tombol di bawah untuk memulai kuis.' : p.deskripsi}</p>
-                        ${p.link ? `<a href="${p.link}" target="_blank" class="btn-download">📥 Unduh Lampiran File</a>` : ''}
+                        ${p.link ? `<a href="${p.link}" target="_blank" class="btn-download">📥 Unduh Lampiran File Guru</a>` : ''}
                         ${actionHtml}
                     </div>`;
             });
