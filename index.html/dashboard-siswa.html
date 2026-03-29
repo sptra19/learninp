@@ -26,12 +26,7 @@
         .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; }
         .nilai-box { position: absolute; top: 20px; right: 20px; background: #ff4081; color: white; padding: 5px 15px; border-radius: 10px; font-weight: bold; }
         .box-kumpul { background: #ffebee; padding: 15px; border-radius: 10px; margin-top: 15px; border: 2px dashed #ff4081; }
-        
-        /* Responsif HP */
-        @media (max-width: 768px) {
-            .container { grid-template-columns: 1fr; }
-            .header-kelas { flex-direction: column; gap: 15px; text-align: center; }
-        }
+        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } .header-kelas { flex-direction: column; gap: 15px; text-align: center; } }
     </style>
 </head>
 <body>
@@ -40,7 +35,6 @@
             <div class="card">
                 <div class="sidebar-title">BOSMATH STUDENT</div>
                 <p style="text-align: center; font-size: 0.8em; margin-bottom: 15px;">👤 <b id="nama-siswa">...</b></p>
-                
                 <button class="nav-btn" onclick="window.open('https://www.geogebra.org/classic', '_blank')">📐 Buka GeoGebra</button>
                 <button class="btn-logout" onclick="prosesLogout()">🚪 Keluar</button>
             </div>
@@ -59,17 +53,13 @@
                     <h3 id="judul-kelas-aktif" style="font-size: 1.5rem; margin:0;"></h3>
                     <button onclick="keluarKelas()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;">👋 Keluar dari Kelas</button>
                 </div>
-                
-                <div class="card">
-                    <div id="daftar-materi"></div>
-                </div>
+                <div class="card"><div id="daftar-materi"></div></div>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        // TAMBAHAN: Import collection, query, dan where untuk baca data dari cloud
         import { getFirestore, doc, getDoc, onSnapshot, updateDoc, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyD0VI7Ai1oRgIwl2UXNV3tE4jbYZO9XJpY", authDomain: "learninp.firebaseapp.com", projectId: "learninp", storageBucket: "learninp.firebasestorage.app", messagingSenderId: "283126632684", appId: "1:283126632684:web:925104a875661b2f5f95c9" };
@@ -79,32 +69,18 @@
         if (!sesi || sesi.role !== 'siswa') location.href = 'index.html';
         document.getElementById('nama-siswa').innerText = sesi.nama;
 
-        // PERBAIKAN LOGOUT: Hanya menghapus sesi user, bukan menghapus seluruh memori HP
+        // LOGOUT DIPERBAIKI: Hanya hapus sesi user, bukan hapus seluruh memori
         window.prosesLogout = () => { localStorage.removeItem('sesiBosmath'); location.href = 'index.html'; };
 
-        let listKelas = [];
-        let dataGlobal = {};
-        let kelasAktifID = '';
+        let listKelas = []; let dataGlobal = {}; let kelasAktifID = '';
 
-        // --- FITUR BARU: PANTAU KELAS DARI CLOUD FIREBASE ---
-        // Sistem ini akan mencari kelas di mana nama siswa ini terdaftar
+        // SINKRONISASI KELAS DARI CLOUD (Anti-Hilang)
         onSnapshot(query(collection(db, "kelas"), where("siswaGabung", "array-contains", sesi.nama)), (snap) => {
-            listKelas = [];
-            dataGlobal = {};
-            
-            snap.forEach(doc => {
-                listKelas.push(doc.id);
-                dataGlobal[doc.id] = doc.data();
-            });
-            
+            listKelas = []; dataGlobal = {};
+            snap.forEach(doc => { listKelas.push(doc.id); dataGlobal[doc.id] = doc.data(); });
             renderTabs();
-            
-            // Jika kelas yang sedang dibuka masih ada, perbarui tampilannya
-            if (kelasAktifID && listKelas.includes(kelasAktifID)) {
-                bukaKonten(kelasAktifID);
-            } else {
-                document.getElementById('area-materi').style.display = 'none';
-            }
+            if (kelasAktifID && listKelas.includes(kelasAktifID)) { bukaKonten(kelasAktifID); } 
+            else { document.getElementById('area-materi').style.display = 'none'; }
         });
 
         window.gabungKelas = async () => {
@@ -117,25 +93,19 @@
                 const snap = await getDoc(docRef);
 
                 if (snap.exists()) {
-                    if (snap.data().isLocked) {
-                        return alert("❌ MAAF! Kelas ini sudah DIKUNCI oleh Guru. Hubungi guru Anda untuk membukanya sementara.");
-                    }
-
+                    if (snap.data().isLocked) return alert("❌ MAAF! Kelas ini sudah DIKUNCI oleh Guru.");
                     let listSiswaCloud = snap.data().siswaGabung || [];
                     if(!listSiswaCloud.includes(sesi.nama)) {
                         listSiswaCloud.push(sesi.nama);
                         await updateDoc(docRef, { siswaGabung: listSiswaCloud });
                     }
-                    
-                    alert("Berhasil Gabung!");
-                    document.getElementById('input-kode').value = ''; 
-                    // Tidak perlu reload, sistem cloud akan memunculkan tab otomatis
+                    alert("Berhasil Gabung!"); document.getElementById('input-kode').value = ''; 
                 } else { alert("Kode Kelas Tidak Ditemukan!"); }
             } catch (err) { alert("Gagal terhubung ke server!"); }
         };
 
         window.keluarKelas = async () => {
-            if(confirm("Yakin ingin keluar dari kelas ini? Semua tugas yang sudah dikumpul akan tetap ada di guru, tapi Anda tidak bisa melihat kelas ini lagi.")) {
+            if(confirm("Yakin ingin keluar dari kelas ini? Semua tugas akan tetap ada di guru.")) {
                 try {
                     const docRef = doc(db, "kelas", kelasAktifID);
                     const snap = await getDoc(docRef);
@@ -144,36 +114,24 @@
                         let newListSiswa = listSiswaCloud.filter(nama => nama !== sesi.nama);
                         await updateDoc(docRef, { siswaGabung: newListSiswa });
                         alert("Berhasil keluar dari kelas.");
-                        // Tidak perlu reload, sistem cloud akan menghapus tab otomatis
                     }
-                } catch (e) {
-                    alert("Terjadi kesalahan saat keluar dari kelas.");
-                }
+                } catch (e) { alert("Terjadi kesalahan."); }
             }
         };
 
         function renderTabs() {
-            const area = document.getElementById('tabs-kelas');
-            area.innerHTML = '';
+            const area = document.getElementById('tabs-kelas'); area.innerHTML = '';
             listKelas.forEach(id => {
                 let btn = document.createElement('button');
                 btn.className = 'tab-btn' + (kelasAktifID === id ? ' active' : '');
-                btn.innerText = "Kelas: " + id;
-                btn.onclick = () => bukaKonten(id);
-                area.appendChild(btn);
+                btn.innerText = "Kelas: " + id; btn.onclick = () => bukaKonten(id); area.appendChild(btn);
             });
         }
 
         function bukaKonten(id) {
-            kelasAktifID = id;
-            renderTabs();
-            document.getElementById('area-materi').style.display = 'block';
-            
+            kelasAktifID = id; renderTabs(); document.getElementById('area-materi').style.display = 'block';
             const data = dataGlobal[id];
-            if(data) {
-                document.getElementById('judul-kelas-aktif').innerText = data.namaKelas;
-                renderDaftarMateri(data.postingan || [], data.tugasTerkumpul || []);
-            }
+            if(data) { document.getElementById('judul-kelas-aktif').innerText = data.namaKelas; renderDaftarMateri(data.postingan || [], data.tugasTerkumpul || []); }
         }
 
         window.kumpulTugas = async (postId, judulTugas) => {
@@ -181,50 +139,35 @@
             const btn = document.getElementById(`btn-${postId}`);
             if (fileInput.files.length === 0) return alert("Pilih file tugas dulu!");
 
-            btn.innerText = "⏳ Mengunggah..."; btn.disabled = true;
-            let fileUrl = "";
+            // PEMBATASAN FILE (Maks 5 MB)
+            const fileSiswa = fileInput.files[0];
+            if (fileSiswa.size > 5 * 1024 * 1024) {
+                return alert("❌ Ukuran file terlalu besar! Maksimal 5 MB. Silakan kompres file Anda.");
+            }
 
+            btn.innerText = "⏳ Mengunggah..."; btn.disabled = true; let fileUrl = "";
             try {
-                const formData = new FormData();
-                formData.append('file', fileInput.files[0]);
+                const formData = new FormData(); formData.append('file', fileSiswa);
                 const res = await fetch('https://store1.gofile.io/uploadFile', { method: 'POST', body: formData });
-                const resJson = await res.json();
-                if (resJson.status === "ok") fileUrl = resJson.data.downloadPage;
+                const resJson = await res.json(); if (resJson.status === "ok") fileUrl = resJson.data.downloadPage;
                 
-                const docRef = doc(db, "kelas", kelasAktifID);
-                const snap = await getDoc(docRef);
+                const docRef = doc(db, "kelas", kelasAktifID); const snap = await getDoc(docRef);
                 let listTugas = snap.data().tugasTerkumpul || [];
-                
-                listTugas.push({
-                    postId: postId,
-                    judulTugas: judulTugas,
-                    namaSiswa: sesi.nama,
-                    link: fileUrl,
-                    nilai: ""
-                });
-
-                await updateDoc(docRef, { tugasTerkumpul: listTugas });
-                alert("Tugas Berhasil Terkirim!");
-            } catch (err) { alert("Gagal mengirim tugas!"); }
-            finally { btn.innerText = "Kirim ke Guru"; btn.disabled = false; }
+                listTugas.push({ postId: postId, judulTugas: judulTugas, namaSiswa: sesi.nama, link: fileUrl, nilai: "" });
+                await updateDoc(docRef, { tugasTerkumpul: listTugas }); alert("Tugas Berhasil Terkirim!");
+            } catch (err) { alert("Gagal mengirim tugas!"); } finally { btn.innerText = "Kirim ke Guru"; btn.disabled = false; }
         };
 
         window.batalkanTugas = async (postId) => {
-            if(!confirm("Yakin ingin membatalkan kiriman tugas ini? File akan dihapus dari meja guru.")) return;
-            
+            if(!confirm("Yakin ingin membatalkan tugas ini?")) return;
             try {
-                const docRef = doc(db, "kelas", kelasAktifID);
-                const snap = await getDoc(docRef);
+                const docRef = doc(db, "kelas", kelasAktifID); const snap = await getDoc(docRef);
                 if (snap.exists()) {
                     let listTugas = snap.data().tugasTerkumpul || [];
                     let listTugasBaru = listTugas.filter(t => !(t.postId === postId && t.namaSiswa === sesi.nama));
-                    
-                    await updateDoc(docRef, { tugasTerkumpul: listTugasBaru });
-                    alert("Tugas berhasil dibatalkan! Silakan upload file yang benar.");
+                    await updateDoc(docRef, { tugasTerkumpul: listTugasBaru }); alert("Tugas berhasil ditarik!");
                 }
-            } catch (err) {
-                alert("Gagal membatalkan tugas. Periksa koneksi.");
-            }
+            } catch (err) { alert("Gagal membatalkan tugas."); }
         };
 
         function renderDaftarMateri(materi, tugasSiswa) {
@@ -234,41 +177,33 @@
             materi.forEach(p => {
                 let sudahKumpul = tugasSiswa.find(t => t.postId === p.id && t.namaSiswa === sesi.nama);
                 let nilaiTampil = sudahKumpul && sudahKumpul.nilai ? `<div class="nilai-box">Nilai: ${sudahKumpul.nilai}</div>` : '';
-                let badgeClass = "bg-" + p.tipe;
+                let badgeClass = "bg-" + p.tipe; let actionHtml = '';
 
-                let actionHtml = '';
                 if (p.tipe === 'game') {
                     actionHtml = `<br><a href="${p.deskripsi}" target="_blank" class="nav-btn" style="display:inline-block; width:auto; padding:8px 25px; margin-top:10px;">🎮 Mainkan Game / Kuis</a>`;
                 } else if (p.tipe === 'materi' || p.tipe === 'soal') {
-                    
                     if (sudahKumpul) {
                         actionHtml = `
                         <div class="box-kumpul">
-                            <p style="color:#4caf50; font-weight:bold; margin-bottom:10px;">✅ Tugas sudah dikumpulkan ke Guru</p>
+                            <p style="color:#4caf50; font-weight:bold; margin-bottom:10px;">✅ Tugas sudah dikumpulkan</p>
                             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                                 <a href="${sudahKumpul.link}" target="_blank" class="nav-btn" style="width:auto; padding:6px 15px; background:#2196f3; font-size:0.85em; margin:0;">👀 Lihat File Saya</a>
-                                
-                                ${sudahKumpul.nilai ? 
-                                    `<span style="color:#d81b60; font-weight:bold; font-size:0.85em;">🔒 Sudah dinilai, file tidak bisa ditarik.</span>` 
-                                    : 
-                                    `<button onclick="batalkanTugas(${p.id})" class="nav-btn" style="width:auto; padding:6px 15px; background:#e53935; font-size:0.85em; margin:0;">🗑️ Tarik Balik Tugas</button>`
-                                }
+                                ${sudahKumpul.nilai ? `<span style="color:#d81b60; font-weight:bold; font-size:0.85em;">🔒 Sudah dinilai, tidak bisa ditarik.</span>` : `<button onclick="batalkanTugas(${p.id})" class="nav-btn" style="width:auto; padding:6px 15px; background:#e53935; font-size:0.85em; margin:0;">🗑️ Tarik Balik Tugas</button>`}
                             </div>
                         </div>`;
                     } else {
+                        // MENGUNCI INPUT FILE HANYA UNTUK GAMBAR DAN PDF
                         actionHtml = `
                         <div class="box-kumpul">
-                            <p style="font-size:0.85em; font-weight:bold; color:#d81b60; margin-bottom:5px;">📤 Kumpulkan Tugas Di Sini:</p>
-                            <input type="file" id="file-${p.id}" style="margin-bottom:10px; display:block; width:100%;">
+                            <p style="font-size:0.85em; font-weight:bold; color:#d81b60; margin-bottom:5px;">📤 Kumpulkan Tugas Di Sini (Maks 5MB):</p>
+                            <input type="file" id="file-${p.id}" accept=".pdf, image/png, image/jpeg, image/jpg" style="margin-bottom:10px; display:block; width:100%;">
                             <button class="nav-btn" onclick="kumpulTugas(${p.id}, '${p.judul}')" id="btn-${p.id}" style="width:auto; padding:8px 25px;">Kirim ke Guru</button>
                         </div>`;
                     }
                 }
-
                 area.innerHTML += `
                     <div class="post-item">
-                        ${nilaiTampil}
-                        <span class="badge-tipe ${badgeClass}">${p.tipe}</span>
+                        ${nilaiTampil} <span class="badge-tipe ${badgeClass}">${p.tipe}</span>
                         <h3 style="color:#d81b60; margin-top:10px;">${p.judul}</h3>
                         <p style="font-size:0.9em; margin: 10px 0; color:#555; white-space:pre-wrap;">${p.tipe === 'game' ? 'Silakan klik tombol di bawah untuk memulai kuis.' : p.deskripsi}</p>
                         ${p.link ? `<a href="${p.link}" target="_blank" class="btn-download">📥 Unduh Lampiran File Guru</a>` : ''}
@@ -276,8 +211,6 @@
                     </div>`;
             });
         }
-
-        renderTabs();
     </script>
 </body>
 </html>
