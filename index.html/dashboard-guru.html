@@ -4,117 +4,210 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEACHER - Dashboard Guru (Pro Edition)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* --- RESET & ROOT --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #ffe4e1; min-height: 100vh; color: #333; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 250px 1fr; gap: 25px; }
-        .card { background: #fff; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(255, 105, 180, 0.1); border: 1px solid #ffb6c1; margin-bottom: 20px; }
-        h2 { color: #d81b60; margin-bottom: 15px; font-size: 1.2rem; border-bottom: 1px dashed #ffb6c1; padding-bottom: 5px; }
-        .sidebar-title { font-size: 1.5rem; color: #d81b60; font-weight: bold; text-align: center; margin-bottom: 20px; }
-        .nav-btn { display: block; width: 100%; background: #ff4081; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-bottom: 10px; font-weight: bold; transition: 0.3s;}
-        .nav-btn:hover { filter: brightness(0.9); transform: translateY(-2px); }
-        .btn-logout { width: 100%; background: #c62828; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-top: 20px; font-weight: bold; }
-        .class-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
-        .tab-btn { background: #fff; border: 2px solid #ff4081; color: #ff4081; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; white-space: nowrap; }
-        .tab-btn.active { background: #ff4081; color: white; }
-        .header-kelas { background: linear-gradient(to right, #ff4081, #d81b60); color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 15px; padding: 20px; margin-bottom: 20px;}
-        .input-style { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #f8bbd0; outline: none; margin-top: 5px; margin-bottom: 10px; }
-        .post-item { background: #fffafb; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #f8bbd0; position: relative; border-left: 5px solid #ff4081; }
-        .btn-hapus-post { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.2em; }
-        .btn-download { display: inline-block; margin-top: 10px; padding: 5px 15px; background: #4caf50; color: white; border-radius: 15px; text-decoration: none; font-size: 0.8em; font-weight: bold; }
-        .siswa-badge { display: inline-block; background: #ffebee; color: #d81b60; padding: 5px 12px; border-radius: 15px; margin: 5px; font-size: 0.85em; font-weight: 600; border: 1px solid #ffb6c1; }
-        .badge-tipe { font-size: 0.7em; padding: 2px 8px; border-radius: 5px; color: white; font-weight: bold; text-transform: uppercase; }
+        body { background: #fdf2f6; color: #333; overflow-x: hidden; }
+        
+        .app-container { display: flex; min-height: 100vh; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            width: 280px; background: white; height: 100vh; position: fixed; left: 0; top: 0;
+            box-shadow: 4px 0 20px rgba(216, 27, 96, 0.05); z-index: 100;
+            display: flex; flex-direction: column; padding: 30px 20px; overflow-y: auto;
+        }
+        .brand { text-align: center; margin-bottom: 30px; }
+        .brand h1 { color: #d81b60; font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; }
+        .brand span { font-size: 0.75rem; color: white; font-weight: 600; background: linear-gradient(135deg, #ff4081, #d81b60); padding: 4px 12px; border-radius: 12px; letter-spacing: 1px;}
+        
+        .menu-label { font-size: 0.75rem; color: #999; font-weight: 600; margin-bottom: 10px; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-btn { 
+            display: flex; align-items: center; justify-content: center; width: 100%; 
+            background: white; color: #555; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; 
+            cursor: pointer; margin-bottom: 10px; font-weight: 600; transition: 0.3s; text-decoration: none; 
+        }
+        .nav-btn:hover { background: #fff0f5; color: #d81b60; border-color: #ffb6c1; transform: translateX(5px); }
+
+        .student-list-container { background: #fffafb; border: 1px dashed #f8bbd0; border-radius: 15px; padding: 15px; margin-top: 20px; flex-grow: 1; }
+        .student-list-container h3 { font-size: 0.9rem; color: #d81b60; margin-bottom: 10px; text-align: center; border-bottom: 1px solid #fce4ec; padding-bottom: 5px;}
+        .siswa-badge { display: block; background: white; color: #d81b60; padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; font-size: 0.85em; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 3px solid #ff4081; }
+
+        /* --- MAIN CONTENT --- */
+        .main-wrapper { margin-left: 280px; width: calc(100% - 280px); padding: 30px 40px; }
+
+        .topbar { 
+            background: white; padding: 15px 30px; border-radius: 20px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; 
+        }
+        .topbar-right { display: flex; align-items: center; gap: 20px; }
+        .user-info { text-align: right; }
+        .user-info h4 { color: #d81b60; font-size: 1rem; margin: 0; }
+        .user-info p { color: #888; font-size: 0.8rem; margin: 0; }
+        .btn-logout { background: #ffebee; color: #d32f2f; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-logout:hover { background: #ffcdd2; }
+
+        .class-tabs { display: flex; gap: 15px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 10px; }
+        .tab-btn { background: white; border: none; color: #888; padding: 12px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: 0.3s;}
+        .tab-btn:hover { background: #fff0f5; color: #d81b60; }
+        .tab-btn.active { background: linear-gradient(135deg, #ff4081, #d81b60); color: white; box-shadow: 0 4px 15px rgba(216, 27, 96, 0.4); }
+
+        .card-main { background: white; border-radius: 25px; padding: 30px; box-shadow: 0 10px 40px rgba(216, 27, 96, 0.05); margin-bottom: 25px;}
+        .header-kelas { background: linear-gradient(135deg, #3f51b5, #1a237e); color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 15px; padding: 25px 30px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(63, 81, 181, 0.2);}
+        .header-kelas.pink-theme { background: linear-gradient(135deg, #ff4081, #d81b60); box-shadow: 0 10px 20px rgba(255, 64, 129, 0.2); }
+
+        .kode-badge { background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 10px; font-family: monospace; letter-spacing: 3px; font-size: 1.2rem; display: inline-block; margin-top: 5px;}
+
+        .input-style { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; outline: none; margin-top: 5px; margin-bottom: 15px; background: #fafafa; font-family: 'Poppins', sans-serif; transition: 0.3s;}
+        .input-style:focus { border-color: #ff4081; background: white; box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1); }
+        .form-label { font-size: 0.85rem; font-weight: 600; color: #555; }
+
+        .post-item { background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #f5f5f5; position: relative; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border-left: 5px solid #ff4081; }
+        .post-item:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: #f8bbd0; }
+        
+        /* Tombol Hapus Materi & Hapus Tugas Siswa */
+        .btn-hapus-item { position: absolute; top: 15px; right: 15px; background: #ffebee; border: none; color: #d32f2f; cursor: pointer; width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; transition: 0.3s; font-weight: bold; }
+        .btn-hapus-item:hover { background: #f44336; color: white; transform: rotate(90deg); }
+        
+        .badge-tipe { font-size: 0.7em; padding: 4px 10px; border-radius: 8px; color: white; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;}
         .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; } .bg-pengumuman { background: #f44336; } 
-        .btn-excel { background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3); transition: 0.3s; font-size: 0.85rem;}
-        .btn-excel:hover { background: #388e3c; transform: translateY(-2px); }
-        .btn-lock { background: #ffca28; color: #333; border: none; padding: 8px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-right: 10px; }
+        
+        .btn-excel { background: linear-gradient(135deg, #4caf50, #2e7d32); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3); transition: 0.3s; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;}
+        .btn-excel:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        
+        .btn-lock { background: white; color: #d81b60; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-lock:hover { transform: scale(1.05); }
+
+        .btn-kirim { background: linear-gradient(135deg, #ff4081, #d81b60); color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1rem; transition: 0.3s; box-shadow: 0 5px 15px rgba(255, 64, 129, 0.3); margin-top: 10px;}
+        .btn-kirim:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start;}
+
+        @media (max-width: 1000px) {
+            .app-container { flex-direction: column; }
+            .sidebar { position: relative; width: 100%; height: auto; padding: 20px; border-radius: 0 0 30px 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); margin-bottom: 20px;}
+            .main-wrapper { margin-left: 0; width: 100%; padding: 10px 20px 40px 20px; }
+            .grid-2-col { grid-template-columns: 1fr; }
+            .header-kelas { flex-direction: column; gap: 15px; text-align: center; }
+            .student-list-container { display: none; } 
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="app-container">
+        
         <div class="sidebar">
-            <div class="card">
-                <div class="sidebar-title">TEACHER Pro</div>
-                <p style="text-align: center; font-size: 0.8em; margin-bottom: 15px;">👤 <b id="nama-guru">...</b></p>
-                <button class="nav-btn" style="background: #2196f3;" onclick="bukaArsipPribadi()">📁 Arsip Modul</button>
-                <button class="nav-btn" onclick="window.open('https://www.geogebra.org/classic', '_blank')">📐 Buka GeoGebra</button>
-                <button class="nav-btn" style="background: #864cbf;" onclick="window.open('https://quizizz.com/admin', '_blank')">🎯 Buka Quizizz</button>
-                <button class="btn-logout" onclick="prosesLogout()">🚪 Keluar</button>
+            <div class="brand">
+                <h1>BOSMATH</h1>
+                <span>TEACHER PRO 🎓</span>
             </div>
-            <div class="card" id="card-siswa" style="display: none;">
-                <h2>👥 Siswa Terdaftar</h2>
+            
+            <p class="menu-label">Menu Utama</p>
+            <button class="nav-btn" style="color: #2196f3; border-color: #bbdefb;" onclick="bukaArsipPribadi()">📁 Arsip Modul Private</button>
+            <button class="nav-btn" onclick="window.open('https://www.geogebra.org/classic', '_blank')">📐 Buka GeoGebra</button>
+            <button class="nav-btn" style="color: #864cbf; border-color: #e1bee7;" onclick="window.open('https://quizizz.com/admin', '_blank')">🎯 Panel Quizizz</button>
+
+            <div class="student-list-container" id="card-siswa" style="display: none;">
+                <h3>👥 Siswa Kelas Ini</h3>
                 <div id="list-siswa-kelas"></div>
             </div>
         </div>
 
-        <div class="main-content">
+        <div class="main-wrapper">
+            <div class="topbar">
+                <div>
+                    <h2 style="color: #333; font-size: 1.5rem; margin:0;">Ruang Kerja Guru</h2>
+                    <p style="color: #888; font-size: 0.9rem; margin:0;">Kelola kelas, materi, dan nilai.</p>
+                </div>
+                <div class="topbar-right">
+                    <div class="user-info">
+                        <h4 id="nama-guru">Memuat...</h4>
+                        <p>Guru / Tutor KKN</p>
+                    </div>
+                    <button class="btn-logout" onclick="prosesLogout()">Keluar</button>
+                </div>
+            </div>
+
             <div class="class-tabs" id="container-kelas">
                 <button class="tab-btn" onclick="buatKelasBaru()">+ Buat Kelas Baru</button>
             </div>
 
             <div id="area-kerja" style="display: none;">
-                <div class="header-kelas">
+                <div class="header-kelas pink-theme">
                     <div>
-                        <h3 id="display-kelas" style="font-size: 1.5rem;"></h3>
-                        <p>KODE AKSES: <b id="display-kode" style="letter-spacing: 2px; background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 5px;"></b></p>
+                        <p style="margin:0; font-size:0.9rem; opacity:0.9;">Pengaturan Kelas</p>
+                        <h3 id="display-kelas" style="font-size: 2rem; margin:0; font-weight:800;">Nama Kelas</h3>
+                        <span class="kode-badge" id="display-kode">XXXXXX</span>
                     </div>
-                    <div>
-                        <button id="btn-lock" class="btn-lock" onclick="toggleKunciKelas()">🔓 Kelas Terbuka</button>
-                        <button onclick="hapusKelasTotal()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer;">🗑️ Hapus</button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button id="btn-lock" class="btn-lock" onclick="toggleKunciKelas()">🔓 Terbuka</button>
+                        <button onclick="hapusKelasTotal()" style="background: rgba(0,0,0,0.2); color: white; border: none; padding: 10px 15px; border-radius: 20px; cursor: pointer;">🗑️ Hapus Kelas</button>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="grid-2-col">
+                    
                     <div>
-                        <div class="card">
-                            <h2>📝 Posting ke Kelas</h2>
-                            <label>Kategori Postingan</label>
+                        <div class="card-main" style="padding: 25px;">
+                            <h2 style="font-size: 1.3rem; margin-bottom: 20px;">📝 Buat Postingan</h2>
+                            <label class="form-label">Kategori</label>
                             <select id="input-tipe" class="input-style">
                                 <option value="materi">📖 Materi Belajar</option>
                                 <option value="rpp">📁 RPP / Modul (Publik)</option>
-                                <option value="soal">📝 Bank Soal</option>
-                                <option value="game">🎮 Link Quizizz / Wordwall</option>
-                                <option value="pengumuman">📢 Pengumuman (Mading)</option>
+                                <option value="soal">📝 Bank Soal / Tugas</option>
+                                <option value="game">🎮 Link Quizizz / Game</option>
+                                <option value="pengumuman">📢 Pengumuman Mading</option>
                             </select>
-
-                            <label>Judul</label><input type="text" id="input-judul" class="input-style">
-                            <label>Isi Tulisan / Deskripsi</label><textarea id="input-deskripsi" class="input-style" rows="3"></textarea>
-                            
-                            <label>Lampiran File (Hanya PDF/JPG/PNG. Maks 10MB)</label>
-                            <input type="file" id="input-file" class="input-style" accept=".pdf, image/png, image/jpeg, image/jpg">
-                            
-                            <button class="nav-btn" id="btn-kirim" onclick="kirimPostingan()" style="margin-top: 10px;">🚀 Kirim ke Kelas</button>
+                            <label class="form-label">Judul</label><input type="text" id="input-judul" class="input-style">
+                            <label class="form-label">Isi / Deskripsi</label><textarea id="input-deskripsi" class="input-style" rows="3"></textarea>
+                            <label class="form-label">Lampiran (Maks 10MB)</label><input type="file" id="input-file" class="input-style" accept=".pdf, image/*">
+                            <button class="btn-kirim" id="btn-kirim" onclick="kirimPostingan()">🚀 Kirim ke Kelas Sekarang</button>
                         </div>
-                        <div class="card"><div id="daftar-postingan"></div></div>
+
+                        <div class="card-main" style="padding: 25px;">
+                            <h2 style="font-size: 1.3rem; margin-bottom: 20px;">📋 Riwayat Postingan</h2>
+                            <div id="daftar-postingan"></div>
+                        </div>
                     </div>
 
                     <div>
-                        <div class="card">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; border-bottom: 1px dashed #ffb6c1; padding-bottom: 10px;">
-                                <h2 style="margin:0; border:none; padding:0;">📥 Tugas Masuk & Nilai</h2>
-                                <button class="btn-excel" onclick="unduhRekapNilai()">📊 Ekspor Excel</button>
+                        <div class="card-main" style="padding: 25px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; border-bottom: 2px dashed #fce4ec; padding-bottom: 15px;">
+                                <div>
+                                    <h2 style="margin:0; border:none; padding:0; font-size: 1.3rem;">📥 Meja Penilaian</h2>
+                                    <p style="margin:0; font-size:0.8rem; color:#888;">Bersihkan tugas yang sudah selesai.</p>
+                                </div>
+                                <button class="btn-excel" onclick="unduhRekapNilai()">📊 Cetak Excel</button>
                             </div>
+                            
+                            <label class="form-label" style="display:block; margin-top:15px;">Penyaringan Cepat:</label>
+                            <select id="filter-tugas" class="input-style" onchange="renderTugasSiswaGantiFilter()">
+                                <option value="semua">Tampilkan Semua Tugas</option>
+                            </select>
+
                             <div id="daftar-tugas-masuk"></div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
             <div id="area-arsip" style="display: none;">
-                <div class="header-kelas" style="background: linear-gradient(to right, #2196f3, #1976d2);">
-                    <div><h3 style="font-size: 1.5rem;">📁 Arsip RPP & Modul Pribadi</h3></div>
+                <div class="header-kelas" style="background: linear-gradient(135deg, #1976d2, #0d47a1);">
+                    <div><h3 style="font-size: 2rem; margin:0; font-weight:800;">📁 Arsip RPP & Modul</h3></div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div class="card">
-                        <h2>➕ Tambah File Drive</h2>
-                        <label>Judul File</label><input type="text" id="arsip-judul" class="input-style">
-                        <label>Link Google Drive</label><input type="text" id="arsip-link" class="input-style" placeholder="https://drive.google.com/...">
-                        <button class="nav-btn" style="background: #2196f3; margin-top: 10px;" onclick="simpanArsip()">💾 Simpan ke Arsip</button>
+                <div class="grid-2-col">
+                    <div class="card-main">
+                        <h2 style="color: #1976d2;">➕ Simpan Drive</h2>
+                        <input type="text" id="arsip-judul" class="input-style" placeholder="Judul File">
+                        <input type="text" id="arsip-link" class="input-style" placeholder="https://drive.google.com/...">
+                        <button class="btn-kirim" style="background: #2196f3;" onclick="simpanArsip()">💾 Simpan Ke Arsip</button>
                     </div>
-                    <div class="card"><h2>📂 Daftar Arsip Saya</h2><div id="daftar-arsip"></div></div>
+                    <div class="card-main"><h2 style="color: #1976d2;">📂 Daftar Arsip</h2><div id="daftar-arsip"></div></div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -128,20 +221,18 @@
         let sesi = JSON.parse(localStorage.getItem('sesiBosmath'));
         if (!sesi || sesi.role !== 'guru') location.href = 'index.html';
         document.getElementById('nama-guru').innerText = sesi.nama;
-        
-        // LOGOUT DIPERBAIKI: Hanya hapus sesi user
         window.prosesLogout = () => { localStorage.removeItem('sesiBosmath'); location.href = 'index.html'; };
 
         let kelasAktif = ''; let dataGlobal = {}; let dataArsipPribadi = [];
 
         onSnapshot(query(collection(db, "kelas"), where("guruId", "==", sesi.uid)), (snap) => {
             const tabs = document.getElementById('container-kelas');
-            tabs.innerHTML = '<button class="tab-btn" onclick="buatKelasBaru()">+ Buat Kelas Baru</button>';
+            tabs.innerHTML = '<button class="tab-btn" onclick="buatKelasBaru()">➕ Buat Kelas Baru</button>';
             snap.forEach(doc => {
                 dataGlobal[doc.id] = doc.data();
                 let btn = document.createElement('button');
                 btn.className = 'tab-btn' + (kelasAktif === doc.id ? ' active' : '');
-                btn.innerText = doc.data().namaKelas; btn.onclick = () => bukaKelas(doc.id); tabs.prepend(btn);
+                btn.innerText = "📚 " + doc.data().namaKelas; btn.onclick = () => bukaKelas(doc.id); tabs.prepend(btn);
             });
             if(kelasAktif && document.getElementById('area-kerja').style.display === 'block') bukaKelas(kelasAktif);
         });
@@ -163,17 +254,16 @@
             
             const isLocked = dataGlobal[id].isLocked || false;
             const btnLock = document.getElementById('btn-lock');
-            if(isLocked) { btnLock.innerText = "🔒 Kelas Dikunci"; btnLock.style.background = "#ff4d4d"; btnLock.style.color = "white"; } 
-            else { btnLock.innerText = "🔓 Kelas Terbuka"; btnLock.style.background = "#ffca28"; btnLock.style.color = "#333"; }
+            if(isLocked) { btnLock.innerHTML = "🔒 Terkunci"; btnLock.style.color = "#d32f2f"; } 
+            else { btnLock.innerHTML = "🔓 Terbuka"; btnLock.style.color = "#2e7d32"; }
 
-            document.querySelectorAll('.tab-btn').forEach(btn => { if(btn.innerText === dataGlobal[id].namaKelas) btn.classList.add('active'); else btn.classList.remove('active'); });
+            document.querySelectorAll('.tab-btn').forEach(btn => { if(btn.innerText.includes(dataGlobal[id].namaKelas)) btn.classList.add('active'); else btn.classList.remove('active'); });
             renderSiswa(dataGlobal[id].siswaGabung || []); renderPost(dataGlobal[id].postingan || []); renderTugasSiswa(dataGlobal[id].tugasTerkumpul || []);
         }
 
         window.toggleKunciKelas = async () => {
             let statusSekarang = dataGlobal[kelasAktif].isLocked || false;
-            let pesan = statusSekarang ? "Buka kelas agar siswa baru bisa mendaftar?" : "Kunci kelas?";
-            if(confirm(pesan)) await updateDoc(doc(db, "kelas", kelasAktif), { isLocked: !statusSekarang });
+            if(confirm(statusSekarang ? "Buka kelas?" : "Kunci kelas?")) await updateDoc(doc(db, "kelas", kelasAktif), { isLocked: !statusSekarang });
         };
 
         window.buatKelasBaru = async () => {
@@ -184,21 +274,12 @@
             }
         };
 
-        window.hapusKelasTotal = async () => { if(confirm("Hapus seluruh kelas?")) { await deleteDoc(doc(db, "kelas", kelasAktif)); kelasAktif = ''; document.getElementById('area-kerja').style.display = 'none'; document.getElementById('card-siswa').style.display = 'none'; } };
+        window.hapusKelasTotal = async () => { if(confirm("Hapus kelas permanen?")) { await deleteDoc(doc(db, "kelas", kelasAktif)); kelasAktif = ''; document.getElementById('area-kerja').style.display = 'none'; document.getElementById('card-siswa').style.display = 'none'; } };
 
         window.kirimPostingan = async () => {
             const btn = document.getElementById('btn-kirim'); const fileInput = document.getElementById('input-file'); 
-            
-            // PEMBATASAN UKURAN FILE GURU (10 MB)
-            if (fileInput.files.length > 0) {
-                if (fileInput.files[0].size > 10 * 1024 * 1024) {
-                    return alert("❌ Ukuran file terlalu besar! Maksimal 10 MB. Silakan kompres.");
-                }
-            }
-
-            btn.innerText = "⏳ Sedang Mengirim..."; btn.disabled = true;
-            let fileUrl = "";
-
+            if (fileInput.files.length > 0 && fileInput.files[0].size > 10 * 1024 * 1024) return alert("Maks 10 MB!");
+            btn.innerText = "⏳ Sedang Mengirim..."; btn.disabled = true; let fileUrl = "";
             if (fileInput.files.length > 0) {
                 try {
                     const formData = new FormData(); formData.append('file', fileInput.files[0]);
@@ -206,58 +287,95 @@
                     const resJson = await res.json(); if (resJson.status === "ok") fileUrl = resJson.data.downloadPage;
                 } catch (err) { alert("Gagal Upload!"); }
             }
-
             try {
                 let newPost = { id: Date.now(), tipe: document.getElementById('input-tipe').value, judul: document.getElementById('input-judul').value, deskripsi: document.getElementById('input-deskripsi').value, link: fileUrl };
                 await updateDoc(doc(db, "kelas", kelasAktif), { postingan: [newPost, ...dataGlobal[kelasAktif].postingan] });
                 document.getElementById('input-judul').value = ""; document.getElementById('input-deskripsi').value = ""; fileInput.value = "";
-            } catch (e) { alert(e.message); } finally { btn.innerText = "🚀 Kirim ke Kelas"; btn.disabled = false; }
+            } catch (e) { alert(e.message); } finally { btn.innerText = "🚀 Kirim ke Kelas Sekarang"; btn.disabled = false; }
         };
 
         window.hapusMateri = async (postId) => { if(confirm("Hapus materi ini?")) { let materiBaru = dataGlobal[kelasAktif].postingan.filter(p => p.id !== postId); await updateDoc(doc(db, "kelas", kelasAktif), { postingan: materiBaru }); } };
-        window.beriNilai = async (index) => { let nilaiVal = document.getElementById(`nilai-${index}`).value; let listTugas = [...dataGlobal[kelasAktif].tugasTerkumpul]; listTugas[index].nilai = nilaiVal; await updateDoc(doc(db, "kelas", kelasAktif), { tugasTerkumpul: listTugas }); alert("Nilai disimpan!"); };
         
-        window.unduhRekapNilai = () => {
-            if (!kelasAktif || !dataGlobal[kelasAktif]) return alert("Pilih kelas terlebih dahulu!");
-            let dataKelas = dataGlobal[kelasAktif]; let namaKelasSekarang = dataKelas.namaKelas; let listSiswa = dataKelas.siswaGabung || []; let listTugasMasuk = dataKelas.tugasTerkumpul || [];
-            if (listSiswa.length === 0) return alert("Belum ada siswa di kelas ini.");
-            let judulTugasUnik = [...new Set(listTugasMasuk.map(t => t.judulTugas))];
-            let separator = ";"; let csvContent = "No" + separator + "Nama Lengkap" + separator + "Kelas";
-            judulTugasUnik.forEach(judul => { csvContent += separator + "Nilai: " + judul; }); csvContent += "\n";
-            listSiswa.forEach((siswa, index) => {
-                let baris = [(index + 1), siswa, namaKelasSekarang];
-                judulTugasUnik.forEach(judul => {
-                    let tugas = listTugasMasuk.find(t => t.namaSiswa === siswa && t.judulTugas === judul);
-                    let nilaiAkhir = (tugas && tugas.nilai) ? tugas.nilai : "Belum Kumpul"; baris.push(nilaiAkhir);
-                }); csvContent += baris.join(separator) + "\n";
-            });
-            let bom = "\uFEFF"; const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", `Rekap_Nilai_${namaKelasSekarang.replace(/\s+/g, '_')}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        window.beriNilai = async (originalIndex) => { 
+            let nilaiVal = document.getElementById(`nilai-${originalIndex}`).value; 
+            let listTugas = [...dataGlobal[kelasAktif].tugasTerkumpul]; 
+            listTugas[originalIndex].nilai = nilaiVal; 
+            await updateDoc(doc(db, "kelas", kelasAktif), { tugasTerkumpul: listTugas }); 
+            alert("Nilai disimpan!");
         };
 
-        window.simpanArsip = async () => { let judul = document.getElementById('arsip-judul').value; let link = document.getElementById('arsip-link').value; if(!judul || !link) return alert("Wajib diisi!"); let newItem = { id: Date.now(), judul: judul, link: link }; let newList = [newItem, ...dataArsipPribadi]; await setDoc(doc(db, "arsip_guru", sesi.uid), { items: newList }, { merge: true }); document.getElementById('arsip-judul').value = ""; document.getElementById('arsip-link').value = ""; alert("Tersimpan!"); };
-        window.hapusArsip = async (idArsip) => { if(confirm("Hapus arsip ini?")) { let newList = dataArsipPribadi.filter(item => item.id !== idArsip); await setDoc(doc(db, "arsip_guru", sesi.uid), { items: newList }, { merge: true }); } };
+        // --- FITUR BARU: HAPUS TUGAS MASUK ---
+        window.hapusTugasMasuk = async (originalIndex) => {
+            if(!confirm("Yakin ingin menghapus data tugas ini dari daftar? Data ini akan hilang permanen dari meja penilaian Anda.")) return;
+            
+            try {
+                let listTugas = [...dataGlobal[kelasAktif].tugasTerkumpul];
+                listTugas.splice(originalIndex, 1); // Hapus 1 item pada index tersebut
+                
+                await updateDoc(doc(db, "kelas", kelasAktif), { tugasTerkumpul: listTugas });
+                alert("Data tugas berhasil dibersihkan!");
+            } catch (err) {
+                alert("Gagal menghapus data.");
+            }
+        };
 
-        function renderSiswa(list) { const area = document.getElementById('list-siswa-kelas'); area.innerHTML = list.length ? "" : "<p style='font-size:0.8em; color:#999;'>Belum ada siswa.</p>"; list.forEach(s => area.innerHTML += `<span class="siswa-badge">👤 ${s}</span>`); }
+        window.renderTugasSiswaGantiFilter = () => { renderTugasSiswa(dataGlobal[kelasAktif].tugasTerkumpul || []); };
         
-        function renderPost(list) {
-            const area = document.getElementById('daftar-postingan'); area.innerHTML = list.length ? "" : "<p style='color:#999;'>Belum ada materi.</p>";
-            list.forEach(p => {
-                let tipeBadge = `<span class="badge-tipe bg-${p.tipe}">${p.tipe}</span>`;
-                let borderColor = p.tipe === 'pengumuman' ? '#f44336' : '#ff4081';
-                area.innerHTML += `
-                <div class="post-item" style="border-left: 5px solid ${borderColor}">
-                    <button class="btn-hapus-post" onclick="hapusMateri(${p.id})">🗑️</button>
-                    ${tipeBadge}
-                    <h4 style="color:#d81b60; margin-top:5px;">${p.judul}</h4>
-                    <p style="font-size:0.8em; margin: 5px 0; white-space:pre-wrap;">${p.deskripsi}</p>
-                    ${p.link ? `<a href="${p.link}" target="_blank" class="btn-download">📥 Lihat File</a>` : ''}
-                </div>`;
-            });
+        function renderTugasSiswa(list) { 
+            const area = document.getElementById('daftar-tugas-masuk'); 
+            const filterSelect = document.getElementById('filter-tugas');
+            let judulUnik = [...new Set(list.map(t => t.judulTugas))];
+            let filterSekarang = filterSelect.value;
+            filterSelect.innerHTML = '<option value="semua">Tampilkan Semua Tugas</option>';
+            judulUnik.forEach(j => { filterSelect.innerHTML += `<option value="${j}" ${(j === filterSekarang) ? 'selected' : ''}>Tugas: ${j}</option>`; });
+
+            let filteredList = filterSelect.value !== 'semua' ? list.filter(t => t.judulTugas === filterSelect.value) : list;
+            filteredList.sort((a, b) => (!a.nilai && b.nilai) ? -1 : (a.nilai && !b.nilai) ? 1 : 0);
+
+            area.innerHTML = filteredList.length ? "" : "<p style='color:#999; text-align:center; margin-top:20px;'>Kosong.</p>"; 
+            
+            filteredList.forEach((t) => { 
+                let originalIndex = list.findIndex(orig => orig.postId === t.postId && orig.namaSiswa === t.namaSiswa);
+                let statusDinilai = t.nilai ? `<span style="background:#e8f5e9; color:#2e7d32; padding:5px 10px; border-radius:12px; font-size:0.75em; font-weight:bold;">✅ Dinilai: ${t.nilai}</span>` : `<span style="background:#ffebee; color:#c62828; padding:5px 10px; border-radius:12px; font-size:0.75em; font-weight:bold;">⏳ Butuh Nilai</span>`;
+                
+                area.innerHTML += ` 
+                <div class="post-item" style="border-left: 5px solid ${t.nilai ? '#4caf50' : '#ffb300'}; padding: 15px;"> 
+                    <button class="btn-hapus-item" onclick="hapusTugasMasuk(${originalIndex})">✕</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-right: 40px;">
+                        <b style="color:#333;">👤 ${t.namaSiswa}</b>
+                        ${statusDinilai}
+                    </div>
+                    <p style="font-size:0.8em; color:#666; margin: 8px 0 12px 0;">Materi: ${t.judulTugas}</p> 
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <a href="${t.link}" target="_blank" style="background:#2196f3; color:white; padding:8px 15px; border-radius:10px; font-size:0.85rem; text-decoration:none; font-weight:bold;">👀 Cek</a>
+                        <input type="number" id="nilai-${originalIndex}" class="input-style" placeholder="Nilai" value="${t.nilai || ''}" style="width:80px; margin:0; padding:8px;"> 
+                        <button id="btn-nilai-${originalIndex}" style="background:#ff4081; color:white; border:none; padding:8px 15px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="beriNilai(${originalIndex})">Simpan</button> 
+                    </div>
+                </div>`; 
+            }); 
         }
 
-        function renderTugasSiswa(list) { const area = document.getElementById('daftar-tugas-masuk'); area.innerHTML = list.length ? "" : "<p style='color:#999;'>Kosong.</p>"; list.forEach((t, i) => { area.innerHTML += ` <div class="post-item"> <b>👤 ${t.namaSiswa}</b> - <a href="${t.link}" target="_blank">Buka Tugas</a> <p style="font-size:0.8em; color:#666;">Materi: ${t.judulTugas}</p> <input type="number" id="nilai-${i}" class="input-style" value="${t.nilai || ''}" style="width:70px; display:inline-block; margin-top:0;"> <button class="nav-btn" onclick="beriNilai(${i})" style="display:inline-block; width:auto; padding:8px 15px; margin-left:5px;">Simpan</button> </div>`; }); }
-        function renderArsip() { const area = document.getElementById('daftar-arsip'); area.innerHTML = dataArsipPribadi.length ? "" : "<p style='color:#999;'>Belum ada arsip tersimpan.</p>"; dataArsipPribadi.forEach(item => { area.innerHTML += ` <div class="post-item" style="border-left: 5px solid #2196f3;"> <button class="btn-hapus-post" onclick="hapusArsip(${item.id})">🗑️</button> <h4 style="color:#1976d2; margin-top:5px;">${item.judul}</h4> <a href="${item.link}" target="_blank" class="btn-download" style="background: #2196f3; margin-top: 10px;">📁 Buka Drive</a> </div>`; }); }
+        window.unduhRekapNilai = () => {
+            if (!kelasAktif || !dataGlobal[kelasAktif]) return alert("Pilih kelas!");
+            let d = dataGlobal[kelasAktif]; let s = d.siswaGabung || []; let t = d.tugasTerkumpul || [];
+            if (s.length === 0) return alert("Siswa kosong.");
+            let ju = [...new Set(t.map(x => x.judulTugas))];
+            let sep = ";"; let csv = "\uFEFFNo" + sep + "Nama Lengkap" + sep + "Kelas";
+            ju.forEach(j => { csv += sep + "Nilai: " + j; }); csv += "\n";
+            s.forEach((name, i) => {
+                let row = [(i + 1), name, d.namaKelas];
+                ju.forEach(j => { let job = t.find(x => x.namaSiswa === name && x.judulTugas === j); row.push((job && job.nilai) ? job.nilai : "Belum Kumpul"); });
+                csv += row.join(sep) + "\n";
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Rekap_Nilai_${d.namaKelas}.csv`; link.click();
+        };
+
+        window.simpanArsip = async () => { let j = document.getElementById('arsip-judul').value; let l = document.getElementById('arsip-link').value; if(!j || !l) return alert("Isi semua!"); let newList = [{ id: Date.now(), judul: j, link: l }, ...dataArsipPribadi]; await setDoc(doc(db, "arsip_guru", sesi.uid), { items: newList }, { merge: true }); alert("Tersimpan!"); };
+        window.hapusArsip = async (id) => { if(confirm("Hapus arsip?")) { let nl = dataArsipPribadi.filter(x => x.id !== id); await setDoc(doc(db, "arsip_guru", sesi.uid), { items: nl }, { merge: true }); } };
+        function renderSiswa(list) { const area = document.getElementById('list-siswa-kelas'); area.innerHTML = list.length ? "" : "<p style='font-size:0.8em; color:#999; text-align:center;'>Kosong.</p>"; list.forEach(s => area.innerHTML += `<span class="siswa-badge">👤 ${s}</span>`); }
+        function renderPost(list) { const area = document.getElementById('daftar-postingan'); area.innerHTML = list.length ? "" : "<p style='color:#999; text-align:center;'>Kosong.</p>"; list.forEach(p => { area.innerHTML += `<div class="post-item" style="border-left: 5px solid ${p.tipe === 'pengumuman' ? '#f44336' : '#ff4081'}"><button class="btn-hapus-item" onclick="hapusMateri(${p.id})">✕</button><span class="badge-tipe bg-${p.tipe}">${p.tipe}</span><h4 style="color:#d81b60; margin-top:10px;">${p.judul}</h4><p style="font-size:0.85em; margin: 10px 0; color:#666;">${p.deskripsi}</p>${p.link ? `<a href="${p.link}" target="_blank" style="background:#e8f5e9; color:#2e7d32; padding:5px 15px; border-radius:15px; text-decoration:none; font-size:0.8em; font-weight:bold;">📥 Unduh File</a>` : ''}</div>`; }); }
+        function renderArsip() { const area = document.getElementById('daftar-arsip'); area.innerHTML = dataArsipPribadi.length ? "" : "<p style='color:#999; text-align:center;'>Kosong.</p>"; dataArsipPribadi.forEach(item => { area.innerHTML += `<div class="post-item" style="border-left: 5px solid #2196f3;"><button class="btn-hapus-item" style="color:#2196f3;" onclick="hapusArsip(${item.id})">✕</button><h4 style="color:#1976d2;">${item.judul}</h4><a href="${item.link}" target="_blank" style="background:#2196f3; color:white; padding:5px 15px; border-radius:15px; text-decoration:none; font-size:0.8em; font-weight:bold; margin-top:10px; display:inline-block;">📁 Drive</a></div>`; }); }
     </script>
 </body>
 </html>
