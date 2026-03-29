@@ -25,11 +25,7 @@
         .btn-download { display: inline-block; margin-top: 10px; padding: 5px 15px; background: #4caf50; color: white; border-radius: 15px; text-decoration: none; font-size: 0.8em; font-weight: bold; }
         .siswa-badge { display: inline-block; background: #ffebee; color: #d81b60; padding: 5px 12px; border-radius: 15px; margin: 5px; font-size: 0.85em; font-weight: 600; border: 1px solid #ffb6c1; }
         .badge-tipe { font-size: 0.7em; padding: 2px 8px; border-radius: 5px; color: white; font-weight: bold; text-transform: uppercase; }
-        
-        /* WARNA BADGE KATEGORI POSTINGAN */
-        .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; } 
-        .bg-pengumuman { background: #f44336; } /* Warna merah khusus pengumuman */
-
+        .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; } .bg-pengumuman { background: #f44336; } 
         .btn-excel { background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3); transition: 0.3s; font-size: 0.85rem;}
         .btn-excel:hover { background: #388e3c; transform: translateY(-2px); }
         .btn-lock { background: #ffca28; color: #333; border: none; padding: 8px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-right: 10px; }
@@ -84,13 +80,13 @@
 
                             <label>Judul</label><input type="text" id="input-judul" class="input-style">
                             <label>Isi Tulisan / Deskripsi</label><textarea id="input-deskripsi" class="input-style" rows="3"></textarea>
-                            <label>Lampiran File (Kosongkan jika Pengumuman)</label><input type="file" id="input-file" class="input-style">
+                            
+                            <label>Lampiran File (Hanya PDF/JPG/PNG. Maks 10MB)</label>
+                            <input type="file" id="input-file" class="input-style" accept=".pdf, image/png, image/jpeg, image/jpg">
+                            
                             <button class="nav-btn" id="btn-kirim" onclick="kirimPostingan()" style="margin-top: 10px;">🚀 Kirim ke Kelas</button>
                         </div>
-                        <div class="card">
-                            <h2>📋 Riwayat Postingan</h2>
-                            <div id="daftar-postingan"></div>
-                        </div>
+                        <div class="card"><div id="daftar-postingan"></div></div>
                     </div>
 
                     <div>
@@ -107,7 +103,7 @@
 
             <div id="area-arsip" style="display: none;">
                 <div class="header-kelas" style="background: linear-gradient(to right, #2196f3, #1976d2);">
-                    <div><h3 style="font-size: 1.5rem;">📁 Arsip RPP & Modul Pribadi</h3><p>File Drive di sini bersifat rahasia.</p></div>
+                    <div><h3 style="font-size: 1.5rem;">📁 Arsip RPP & Modul Pribadi</h3></div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="card">
@@ -119,7 +115,6 @@
                     <div class="card"><h2>📂 Daftar Arsip Saya</h2><div id="daftar-arsip"></div></div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -133,7 +128,9 @@
         let sesi = JSON.parse(localStorage.getItem('sesiBosmath'));
         if (!sesi || sesi.role !== 'guru') location.href = 'index.html';
         document.getElementById('nama-guru').innerText = sesi.nama;
-        window.prosesLogout = () => { localStorage.clear(); location.href = 'index.html'; };
+        
+        // LOGOUT DIPERBAIKI: Hanya hapus sesi user
+        window.prosesLogout = () => { localStorage.removeItem('sesiBosmath'); location.href = 'index.html'; };
 
         let kelasAktif = ''; let dataGlobal = {}; let dataArsipPribadi = [];
 
@@ -164,7 +161,6 @@
             document.getElementById('area-arsip').style.display = 'none'; document.getElementById('area-kerja').style.display = 'block'; document.getElementById('card-siswa').style.display = 'block';
             document.getElementById('display-kelas').innerText = dataGlobal[id].namaKelas; document.getElementById('display-kode').innerText = id;
             
-            // Render Status Gembok
             const isLocked = dataGlobal[id].isLocked || false;
             const btnLock = document.getElementById('btn-lock');
             if(isLocked) { btnLock.innerText = "🔒 Kelas Dikunci"; btnLock.style.background = "#ff4d4d"; btnLock.style.color = "white"; } 
@@ -174,20 +170,16 @@
             renderSiswa(dataGlobal[id].siswaGabung || []); renderPost(dataGlobal[id].postingan || []); renderTugasSiswa(dataGlobal[id].tugasTerkumpul || []);
         }
 
-        // FITUR BARU: FUNGSI KUNCI KELAS
         window.toggleKunciKelas = async () => {
             let statusSekarang = dataGlobal[kelasAktif].isLocked || false;
-            let pesan = statusSekarang ? "Buka kelas agar siswa baru bisa mendaftar?" : "Kunci kelas agar tidak ada siswa liar yang bisa masuk menggunakan kode ini?";
-            if(confirm(pesan)) {
-                await updateDoc(doc(db, "kelas", kelasAktif), { isLocked: !statusSekarang });
-            }
+            let pesan = statusSekarang ? "Buka kelas agar siswa baru bisa mendaftar?" : "Kunci kelas?";
+            if(confirm(pesan)) await updateDoc(doc(db, "kelas", kelasAktif), { isLocked: !statusSekarang });
         };
 
         window.buatKelasBaru = async () => {
             let n = prompt("Nama Kelas Baru:");
             if (n) {
                 let id = Math.random().toString(36).substring(2, 8).toUpperCase();
-                // isLocked default false (terbuka)
                 await setDoc(doc(db, "kelas", id), { namaKelas: n, guruId: sesi.uid, isLocked: false, postingan: [], siswaGabung: [], tugasTerkumpul: [] });
             }
         };
@@ -195,7 +187,16 @@
         window.hapusKelasTotal = async () => { if(confirm("Hapus seluruh kelas?")) { await deleteDoc(doc(db, "kelas", kelasAktif)); kelasAktif = ''; document.getElementById('area-kerja').style.display = 'none'; document.getElementById('card-siswa').style.display = 'none'; } };
 
         window.kirimPostingan = async () => {
-            const btn = document.getElementById('btn-kirim'); const fileInput = document.getElementById('input-file'); btn.innerText = "⏳ Sedang Mengirim..."; btn.disabled = true;
+            const btn = document.getElementById('btn-kirim'); const fileInput = document.getElementById('input-file'); 
+            
+            // PEMBATASAN UKURAN FILE GURU (10 MB)
+            if (fileInput.files.length > 0) {
+                if (fileInput.files[0].size > 10 * 1024 * 1024) {
+                    return alert("❌ Ukuran file terlalu besar! Maksimal 10 MB. Silakan kompres.");
+                }
+            }
+
+            btn.innerText = "⏳ Sedang Mengirim..."; btn.disabled = true;
             let fileUrl = "";
 
             if (fileInput.files.length > 0) {
@@ -216,11 +217,10 @@
         window.hapusMateri = async (postId) => { if(confirm("Hapus materi ini?")) { let materiBaru = dataGlobal[kelasAktif].postingan.filter(p => p.id !== postId); await updateDoc(doc(db, "kelas", kelasAktif), { postingan: materiBaru }); } };
         window.beriNilai = async (index) => { let nilaiVal = document.getElementById(`nilai-${index}`).value; let listTugas = [...dataGlobal[kelasAktif].tugasTerkumpul]; listTugas[index].nilai = nilaiVal; await updateDoc(doc(db, "kelas", kelasAktif), { tugasTerkumpul: listTugas }); alert("Nilai disimpan!"); };
         
-        // FUNGSI EXCEL
         window.unduhRekapNilai = () => {
             if (!kelasAktif || !dataGlobal[kelasAktif]) return alert("Pilih kelas terlebih dahulu!");
             let dataKelas = dataGlobal[kelasAktif]; let namaKelasSekarang = dataKelas.namaKelas; let listSiswa = dataKelas.siswaGabung || []; let listTugasMasuk = dataKelas.tugasTerkumpul || [];
-            if (listSiswa.length === 0) return alert("Belum ada siswa yang mendaftar di kelas ini.");
+            if (listSiswa.length === 0) return alert("Belum ada siswa di kelas ini.");
             let judulTugasUnik = [...new Set(listTugasMasuk.map(t => t.judulTugas))];
             let separator = ";"; let csvContent = "No" + separator + "Nama Lengkap" + separator + "Kelas";
             judulTugasUnik.forEach(judul => { csvContent += separator + "Nilai: " + judul; }); csvContent += "\n";
@@ -244,7 +244,6 @@
             const area = document.getElementById('daftar-postingan'); area.innerHTML = list.length ? "" : "<p style='color:#999;'>Belum ada materi.</p>";
             list.forEach(p => {
                 let tipeBadge = `<span class="badge-tipe bg-${p.tipe}">${p.tipe}</span>`;
-                // Jika pengumuman, ubah border kirinya jadi merah muda (f44336)
                 let borderColor = p.tipe === 'pengumuman' ? '#f44336' : '#ff4081';
                 area.innerHTML += `
                 <div class="post-item" style="border-left: 5px solid ${borderColor}">
