@@ -4,57 +4,138 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STUDENT BOSMATH - Dashboard Siswa</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* --- RESET & ROOT --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #ffe4e1; min-height: 100vh; color: #333; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
-        .card { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(255, 105, 180, 0.1); border: 1px solid #ffb6c1; margin-bottom: 20px; }
-        h2 { color: #d81b60; margin-bottom: 15px; font-size: 1.2rem; border-bottom: 1px dashed #ffb6c1; padding-bottom: 5px; }
-        .sidebar-title { font-size: 1.5rem; color: #d81b60; font-weight: bold; text-align: center; margin-bottom: 20px; }
-        .nav-btn { display: block; width: 100%; background: #ff4081; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-bottom: 10px; font-weight: bold; transition: 0.3s; text-align: center; text-decoration: none;}
-        .nav-btn:hover { filter: brightness(0.9); transform: translateY(-2px); }
-        .btn-logout { width: 100%; background: #c62828; color: white; padding: 12px; border-radius: 25px; border: none; cursor: pointer; margin-top: 20px; font-weight: bold; }
-        .class-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
-        .tab-btn { background: #fff; border: 2px solid #ff4081; color: #ff4081; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; white-space: nowrap; }
-        .tab-btn.active { background: #ff4081; color: white; }
-        .header-kelas { background: linear-gradient(to right, #ff4081, #d81b60); color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 15px; padding: 20px; margin-bottom: 20px;}
-        .input-kode { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ffb6c1; outline: none; text-align: center; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px;}
-        .post-item { background: #fffafb; padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #f8bbd0; position: relative; }
-        .btn-download { display: inline-block; margin-top: 10px; padding: 8px 15px; background: #4caf50; color: white; border-radius: 20px; text-decoration: none; font-size: 0.8em; font-weight: bold; }
-        .badge-tipe { font-size: 0.75em; padding: 4px 10px; border-radius: 8px; color: white; font-weight: bold; text-transform: uppercase; }
-        .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; }
-        .nilai-box { position: absolute; top: 20px; right: 20px; background: #ff4081; color: white; padding: 5px 15px; border-radius: 10px; font-weight: bold; }
-        .box-kumpul { background: #ffebee; padding: 15px; border-radius: 10px; margin-top: 15px; border: 2px dashed #ff4081; }
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } .header-kelas { flex-direction: column; gap: 15px; text-align: center; } }
+        body { background: #fdf2f6; /* Warna latar sangat lembut */ color: #333; overflow-x: hidden; }
+        
+        /* --- LAYOUT UTAMA --- */
+        .app-container { display: flex; min-height: 100vh; }
+
+        /* --- 1. SIDEBAR (KIRI) --- */
+        .sidebar { 
+            width: 280px; background: white; height: 100vh; position: fixed; left: 0; top: 0;
+            box-shadow: 4px 0 20px rgba(216, 27, 96, 0.05); z-index: 100;
+            display: flex; flex-direction: column; padding: 30px 20px;
+        }
+        .brand { text-align: center; margin-bottom: 40px; }
+        .brand h1 { color: #d81b60; font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; }
+        .brand span { font-size: 0.8rem; color: #ff4081; font-weight: 600; background: #ffebee; padding: 3px 10px; border-radius: 12px; }
+        
+        .menu-label { font-size: 0.75rem; color: #999; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-btn { 
+            display: flex; align-items: center; justify-content: center; width: 100%; 
+            background: white; color: #555; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; 
+            cursor: pointer; margin-bottom: 15px; font-weight: 600; transition: 0.3s; text-decoration: none; 
+        }
+        .nav-btn:hover { background: #fff0f5; color: #d81b60; border-color: #ffb6c1; transform: translateX(5px); }
+        .nav-btn.primary { background: linear-gradient(135deg, #ff4081, #d81b60); color: white; border: none; box-shadow: 0 4px 15px rgba(255, 64, 129, 0.3); }
+        .nav-btn.primary:hover { filter: brightness(1.1); transform: translateY(-3px); }
+
+        .join-box { background: #fffafb; border: 1px dashed #f8bbd0; border-radius: 15px; padding: 20px; margin-top: auto; text-align: center; }
+        .join-box h3 { font-size: 1rem; color: #d81b60; margin-bottom: 10px; }
+        .input-kode { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #f8bbd0; outline: none; text-align: center; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px; background: white;}
+
+        /* --- 2. MAIN CONTENT (KANAN) --- */
+        .main-wrapper { margin-left: 280px; width: calc(100% - 280px); padding: 30px 40px; }
+
+        /* Topbar */
+        .topbar { 
+            background: white; padding: 15px 30px; border-radius: 20px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; 
+        }
+        .topbar-right { display: flex; align-items: center; gap: 20px; }
+        .user-info { text-align: right; }
+        .user-info h4 { color: #d81b60; font-size: 1rem; margin: 0; }
+        .user-info p { color: #888; font-size: 0.8rem; margin: 0; }
+        .btn-logout { background: #ffebee; color: #d32f2f; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-logout:hover { background: #ffcdd2; }
+
+        /* Tabs & Kelas Aktif */
+        .class-tabs { display: flex; gap: 15px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { background: white; border: none; color: #888; padding: 12px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: 0.3s;}
+        .tab-btn:hover { background: #fff0f5; color: #d81b60; }
+        .tab-btn.active { background: #d81b60; color: white; box-shadow: 0 4px 15px rgba(216, 27, 96, 0.4); }
+
+        .card-main { background: white; border-radius: 25px; padding: 30px; box-shadow: 0 10px 40px rgba(216, 27, 96, 0.05); }
+        .header-kelas { background: linear-gradient(135deg, #ff4081, #d81b60); color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 15px; padding: 25px 30px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(255, 64, 129, 0.2);}
+        
+        /* Postingan Materi */
+        .post-item { background: #fff; padding: 25px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #fce4ec; position: relative; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.02);}
+        .post-item:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(216, 27, 96, 0.1); border-color: #f8bbd0; }
+        .btn-download { display: inline-block; margin-top: 15px; padding: 10px 20px; background: #e8f5e9; color: #2e7d32; border-radius: 20px; text-decoration: none; font-size: 0.85em; font-weight: 700; transition: 0.3s;}
+        .btn-download:hover { background: #c8e6c9; }
+        .badge-tipe { font-size: 0.75em; padding: 6px 12px; border-radius: 10px; color: white; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;}
+        .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; } .bg-pengumuman { background: #f44336; }
+        
+        .nilai-box { position: absolute; top: 25px; right: 25px; background: linear-gradient(135deg, #ffca28, #ffb300); color: #fff; padding: 8px 20px; border-radius: 12px; font-weight: 800; box-shadow: 0 5px 15px rgba(255, 179, 0, 0.3); font-size: 1.1rem;}
+        .box-kumpul { background: #fcf3f6; padding: 20px; border-radius: 15px; margin-top: 20px; border: 2px dashed #f8bbd0; }
+
+        /* Responsif HP */
+        @media (max-width: 900px) {
+            .app-container { flex-direction: column; }
+            .sidebar { position: relative; width: 100%; height: auto; padding: 20px; border-radius: 0 0 30px 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); margin-bottom: 20px;}
+            .main-wrapper { margin-left: 0; width: 100%; padding: 10px 20px 40px 20px; }
+            .topbar { flex-direction: column; gap: 15px; text-align: center; }
+            .user-info { text-align: center; }
+            .header-kelas { flex-direction: column; gap: 15px; text-align: center; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="app-container">
+        
         <div class="sidebar">
-            <div class="card">
-                <div class="sidebar-title">BOSMATH STUDENT</div>
-                <p style="text-align: center; font-size: 0.8em; margin-bottom: 15px;">👤 <b id="nama-siswa">...</b></p>
-                <button class="nav-btn" onclick="window.open('https://www.geogebra.org/classic', '_blank')">📐 Buka GeoGebra</button>
-                <button class="btn-logout" onclick="prosesLogout()">🚪 Keluar</button>
+            <div class="brand">
+                <h1>BOSMATH</h1>
+                <span>STUDENT PORTAL</span>
             </div>
-            <div class="card">
-                <h2>➕ Gabung Kelas</h2>
-                <input type="text" id="input-kode" class="input-kode" placeholder="KODE DARI GURU">
-                <button class="nav-btn" onclick="gabungKelas()">Gabung Sekarang</button>
+            
+            <p class="menu-label">Menu Utama</p>
+            <button class="nav-btn" onclick="window.open('https://www.geogebra.org/classic', '_blank')">📐 Buka GeoGebra</button>
+            <button class="nav-btn" style="color: #864cbf; border-color: #e1bee7;" onclick="window.open('https://quizizz.com/join', '_blank')">🎯 Join Quizizz</button>
+
+            <div class="join-box">
+                <h3>➕ Gabung Kelas</h3>
+                <input type="text" id="input-kode" class="input-kode" placeholder="KODE KELAS">
+                <button class="nav-btn primary" onclick="gabungKelas()">Gabung</button>
             </div>
         </div>
 
-        <div class="main-content">
-            <div class="class-tabs" id="tabs-kelas"></div>
+        <div class="main-wrapper">
+            
+            <div class="topbar">
+                <div>
+                    <h2 style="color: #333; font-size: 1.5rem; margin:0;">Dashboard Siswa</h2>
+                    <p style="color: #888; font-size: 0.9rem; margin:0;">Pantau materi dan tugasmu di sini.</p>
+                </div>
+                <div class="topbar-right">
+                    <div class="user-info">
+                        <h4 id="nama-siswa">Memuat...</h4>
+                        <p>Siswa </p>
+                    </div>
+                    <button class="btn-logout" onclick="prosesLogout()">Keluar</button>
+                </div>
+            </div>
+
+            <div class="class-tabs" id="tabs-kelas">
+                </div>
 
             <div id="area-materi" style="display: none;">
-                <div class="header-kelas">
-                    <h3 id="judul-kelas-aktif" style="font-size: 1.5rem; margin:0;"></h3>
-                    <button onclick="keluarKelas()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;">👋 Keluar dari Kelas</button>
+                <div class="card-main">
+                    <div class="header-kelas">
+                        <div>
+                            <p style="margin:0; font-size:0.9rem; opacity:0.9;">Materi Kelas</p>
+                            <h3 id="judul-kelas-aktif" style="font-size: 2rem; margin:0; font-weight:800;">Memuat Kelas...</h3>
+                        </div>
+                        <button onclick="keluarKelas()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5); padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; transition:0.3s;">👋 Keluar Kelas</button>
+                    </div>
+                    
+                    <div id="daftar-materi"></div>
                 </div>
-                <div class="card"><div id="daftar-materi"></div></div>
             </div>
+
         </div>
     </div>
 
@@ -69,12 +150,10 @@
         if (!sesi || sesi.role !== 'siswa') location.href = 'index.html';
         document.getElementById('nama-siswa').innerText = sesi.nama;
 
-        // LOGOUT DIPERBAIKI: Hanya hapus sesi user, bukan hapus seluruh memori
         window.prosesLogout = () => { localStorage.removeItem('sesiBosmath'); location.href = 'index.html'; };
 
         let listKelas = []; let dataGlobal = {}; let kelasAktifID = '';
 
-        // SINKRONISASI KELAS DARI CLOUD (Anti-Hilang)
         onSnapshot(query(collection(db, "kelas"), where("siswaGabung", "array-contains", sesi.nama)), (snap) => {
             listKelas = []; dataGlobal = {};
             snap.forEach(doc => { listKelas.push(doc.id); dataGlobal[doc.id] = doc.data(); });
@@ -121,10 +200,13 @@
 
         function renderTabs() {
             const area = document.getElementById('tabs-kelas'); area.innerHTML = '';
+            if(listKelas.length === 0) area.innerHTML = '<p style="color:#888; font-style:italic;">Belum ada kelas. Silakan gabung menggunakan kode dari guru.</p>';
             listKelas.forEach(id => {
                 let btn = document.createElement('button');
                 btn.className = 'tab-btn' + (kelasAktifID === id ? ' active' : '');
-                btn.innerText = "Kelas: " + id; btn.onclick = () => bukaKonten(id); area.appendChild(btn);
+                btn.innerText = "📚 " + dataGlobal[id].namaKelas; 
+                btn.onclick = () => bukaKonten(id); 
+                area.appendChild(btn);
             });
         }
 
@@ -139,7 +221,6 @@
             const btn = document.getElementById(`btn-${postId}`);
             if (fileInput.files.length === 0) return alert("Pilih file tugas dulu!");
 
-            // PEMBATASAN FILE (Maks 5 MB)
             const fileSiswa = fileInput.files[0];
             if (fileSiswa.size > 5 * 1024 * 1024) {
                 return alert("❌ Ukuran file terlalu besar! Maksimal 5 MB. Silakan kompres file Anda.");
@@ -172,41 +253,47 @@
 
         function renderDaftarMateri(materi, tugasSiswa) {
             const area = document.getElementById('daftar-materi');
-            area.innerHTML = materi.length ? "" : "<p style='text-align:center; color:#999; margin-top:20px;'>Belum ada materi dari guru.</p>";
+            area.innerHTML = materi.length ? "" : "<p style='text-align:center; color:#999; margin-top:20px;'>Belum ada materi/postingan dari guru.</p>";
             
             materi.forEach(p => {
                 let sudahKumpul = tugasSiswa.find(t => t.postId === p.id && t.namaSiswa === sesi.nama);
-                let nilaiTampil = sudahKumpul && sudahKumpul.nilai ? `<div class="nilai-box">Nilai: ${sudahKumpul.nilai}</div>` : '';
+                let nilaiTampil = sudahKumpul && sudahKumpul.nilai ? `<div class="nilai-box">${sudahKumpul.nilai} ✨</div>` : '';
                 let badgeClass = "bg-" + p.tipe; let actionHtml = '';
 
-                if (p.tipe === 'game') {
-                    actionHtml = `<br><a href="${p.deskripsi}" target="_blank" class="nav-btn" style="display:inline-block; width:auto; padding:8px 25px; margin-top:10px;">🎮 Mainkan Game / Kuis</a>`;
+                if (p.tipe === 'pengumuman') {
+                    // Tidak ada tombol tugas untuk pengumuman
+                    actionHtml = '';
+                } else if (p.tipe === 'game') {
+                    actionHtml = `<br><a href="${p.deskripsi}" target="_blank" class="btn-download" style="background:#ff9800; color:white;">🎮 Mainkan Game / Kuis</a>`;
                 } else if (p.tipe === 'materi' || p.tipe === 'soal') {
                     if (sudahKumpul) {
                         actionHtml = `
                         <div class="box-kumpul">
-                            <p style="color:#4caf50; font-weight:bold; margin-bottom:10px;">✅ Tugas sudah dikumpulkan</p>
+                            <p style="color:#2e7d32; font-weight:bold; margin-bottom:10px;">✅ Tugas sudah dikumpulkan</p>
                             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                                <a href="${sudahKumpul.link}" target="_blank" class="nav-btn" style="width:auto; padding:6px 15px; background:#2196f3; font-size:0.85em; margin:0;">👀 Lihat File Saya</a>
-                                ${sudahKumpul.nilai ? `<span style="color:#d81b60; font-weight:bold; font-size:0.85em;">🔒 Sudah dinilai, tidak bisa ditarik.</span>` : `<button onclick="batalkanTugas(${p.id})" class="nav-btn" style="width:auto; padding:6px 15px; background:#e53935; font-size:0.85em; margin:0;">🗑️ Tarik Balik Tugas</button>`}
+                                <a href="${sudahKumpul.link}" target="_blank" class="nav-btn" style="width:auto; padding:8px 20px; background:#e3f2fd; color:#1565c0; border:none; margin:0;">👀 Lihat File Saya</a>
+                                ${sudahKumpul.nilai ? `<span style="color:#d81b60; font-weight:bold; font-size:0.85em; background:#fce4ec; padding:8px 15px; border-radius:15px;">🔒 Sudah dinilai</span>` : `<button onclick="batalkanTugas(${p.id})" class="nav-btn" style="width:auto; padding:8px 20px; background:#ffebee; color:#c62828; border:none; margin:0;">🗑️ Tarik Tugas</button>`}
                             </div>
                         </div>`;
                     } else {
-                        // MENGUNCI INPUT FILE HANYA UNTUK GAMBAR DAN PDF
                         actionHtml = `
                         <div class="box-kumpul">
-                            <p style="font-size:0.85em; font-weight:bold; color:#d81b60; margin-bottom:5px;">📤 Kumpulkan Tugas Di Sini (Maks 5MB):</p>
-                            <input type="file" id="file-${p.id}" accept=".pdf, image/png, image/jpeg, image/jpg" style="margin-bottom:10px; display:block; width:100%;">
-                            <button class="nav-btn" onclick="kumpulTugas(${p.id}, '${p.judul}')" id="btn-${p.id}" style="width:auto; padding:8px 25px;">Kirim ke Guru</button>
+                            <p style="font-size:0.9em; font-weight:bold; color:#d81b60; margin-bottom:10px;">📤 Kumpulkan Tugas (Maks 5MB, PDF/JPG/PNG):</p>
+                            <input type="file" id="file-${p.id}" accept=".pdf, image/png, image/jpeg, image/jpg" style="margin-bottom:10px; display:block; width:100%; border:1px solid #f8bbd0; border-radius:10px; padding:10px; background:white;">
+                            <button class="nav-btn primary" onclick="kumpulTugas(${p.id}, '${p.judul}')" id="btn-${p.id}" style="width:auto; padding:10px 30px;">Kirim Tugas</button>
                         </div>`;
                     }
                 }
+
+                let borderWarna = p.tipe === 'pengumuman' ? '#f44336' : (p.tipe === 'game' ? '#ff9800' : '#ff4081');
+                
                 area.innerHTML += `
-                    <div class="post-item">
-                        ${nilaiTampil} <span class="badge-tipe ${badgeClass}">${p.tipe}</span>
-                        <h3 style="color:#d81b60; margin-top:10px;">${p.judul}</h3>
-                        <p style="font-size:0.9em; margin: 10px 0; color:#555; white-space:pre-wrap;">${p.tipe === 'game' ? 'Silakan klik tombol di bawah untuk memulai kuis.' : p.deskripsi}</p>
-                        ${p.link ? `<a href="${p.link}" target="_blank" class="btn-download">📥 Unduh Lampiran File Guru</a>` : ''}
+                    <div class="post-item" style="border-left: 5px solid ${borderWarna};">
+                        ${nilaiTampil} 
+                        <span class="badge-tipe ${badgeClass}">${p.tipe}</span>
+                        <h3 style="color:#d81b60; margin-top:15px; font-size: 1.3rem;">${p.judul}</h3>
+                        <p style="font-size:0.95em; margin: 15px 0; color:#555; white-space:pre-wrap; line-height:1.6;">${p.tipe === 'game' ? 'Silakan klik tombol di bawah untuk mulai.' : p.deskripsi}</p>
+                        ${p.link ? `<a href="${p.link}" target="_blank" class="btn-download">📥 Unduh Lampiran Materi</a>` : ''}
                         ${actionHtml}
                     </div>`;
             });
