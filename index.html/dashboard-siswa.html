@@ -8,79 +8,47 @@
     <style>
         /* --- RESET & ROOT --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #fdf2f6; /* Warna latar sangat lembut */ color: #333; overflow-x: hidden; }
-        
-        /* --- LAYOUT UTAMA --- */
+        body { background: #fdf2f6; color: #333; overflow-x: hidden; }
         .app-container { display: flex; min-height: 100vh; }
-
-        /* --- 1. SIDEBAR (KIRI) --- */
-        .sidebar { 
-            width: 280px; background: white; height: 100vh; position: fixed; left: 0; top: 0;
-            box-shadow: 4px 0 20px rgba(216, 27, 96, 0.05); z-index: 100;
-            display: flex; flex-direction: column; padding: 30px 20px;
-        }
+        .sidebar { width: 280px; background: white; height: 100vh; position: fixed; left: 0; top: 0; box-shadow: 4px 0 20px rgba(216, 27, 96, 0.05); z-index: 100; display: flex; flex-direction: column; padding: 30px 20px; }
         .brand { text-align: center; margin-bottom: 40px; }
         .brand h1 { color: #d81b60; font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; }
         .brand span { font-size: 0.8rem; color: #ff4081; font-weight: 600; background: #ffebee; padding: 3px 10px; border-radius: 12px; }
-        
         .menu-label { font-size: 0.75rem; color: #999; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .nav-btn { 
-            display: flex; align-items: center; justify-content: center; width: 100%; 
-            background: white; color: #555; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; 
-            cursor: pointer; margin-bottom: 15px; font-weight: 600; transition: 0.3s; text-decoration: none; 
-        }
+        .nav-btn { display: flex; align-items: center; justify-content: center; width: 100%; background: white; color: #555; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; cursor: pointer; margin-bottom: 15px; font-weight: 600; transition: 0.3s; text-decoration: none; }
         .nav-btn:hover { background: #fff0f5; color: #d81b60; border-color: #ffb6c1; transform: translateX(5px); }
         .nav-btn.primary { background: linear-gradient(135deg, #ff4081, #d81b60); color: white; border: none; box-shadow: 0 4px 15px rgba(255, 64, 129, 0.3); }
         .nav-btn.primary:hover { filter: brightness(1.1); transform: translateY(-3px); }
-
         .join-box { background: #fffafb; border: 1px dashed #f8bbd0; border-radius: 15px; padding: 20px; margin-top: auto; text-align: center; }
         .join-box h3 { font-size: 1rem; color: #d81b60; margin-bottom: 10px; }
         .input-kode { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #f8bbd0; outline: none; text-align: center; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px; background: white;}
-
-        /* --- 2. MAIN CONTENT (KANAN) --- */
         .main-wrapper { margin-left: 280px; width: calc(100% - 280px); padding: 30px 40px; }
-
-        /* Topbar */
-        .topbar { 
-            background: white; padding: 15px 30px; border-radius: 20px; 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; 
-        }
+        .topbar { background: white; padding: 15px 30px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .topbar-right { display: flex; align-items: center; gap: 20px; }
         .user-info { text-align: right; }
         .user-info h4 { color: #d81b60; font-size: 1rem; margin: 0; }
         .user-info p { color: #888; font-size: 0.8rem; margin: 0; }
         .btn-logout { background: #ffebee; color: #d32f2f; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-logout:hover { background: #ffcdd2; }
-
-        /* Tabs & Kelas Aktif */
         .class-tabs { display: flex; gap: 15px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px; }
         .tab-btn { background: white; border: none; color: #888; padding: 12px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: 0.3s;}
         .tab-btn:hover { background: #fff0f5; color: #d81b60; }
         .tab-btn.active { background: #d81b60; color: white; box-shadow: 0 4px 15px rgba(216, 27, 96, 0.4); }
-
         .card-main { background: white; border-radius: 25px; padding: 30px; box-shadow: 0 10px 40px rgba(216, 27, 96, 0.05); }
         .header-kelas { background: linear-gradient(135deg, #ff4081, #d81b60); color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 15px; padding: 25px 30px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(255, 64, 129, 0.2);}
-        
-        /* Postingan Materi */
         .post-item { background: #fff; padding: 25px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #fce4ec; position: relative; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.02);}
         .post-item:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(216, 27, 96, 0.1); border-color: #f8bbd0; }
         .btn-download { display: inline-block; margin-top: 15px; padding: 10px 20px; background: #e8f5e9; color: #2e7d32; border-radius: 20px; text-decoration: none; font-size: 0.85em; font-weight: 700; transition: 0.3s;}
         .btn-download:hover { background: #c8e6c9; }
         .badge-tipe { font-size: 0.75em; padding: 6px 12px; border-radius: 10px; color: white; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;}
-        .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; } .bg-pengumuman { background: #f44336; }
         
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        .badge-baru { background: #f44336; color: white; padding: 6px 12px; border-radius: 10px; font-size: 0.75em; font-weight: bold; letter-spacing: 1px; animation: pulse 1.5s infinite; margin-left: 10px; }
+
+        .bg-rpp { background: #9c27b0; } .bg-soal { background: #2196f3; } .bg-game { background: #ff9800; } .bg-materi { background: #ff4081; } .bg-pengumuman { background: #f44336; }
         .nilai-box { position: absolute; top: 25px; right: 25px; background: linear-gradient(135deg, #ffca28, #ffb300); color: #fff; padding: 8px 20px; border-radius: 12px; font-weight: 800; box-shadow: 0 5px 15px rgba(255, 179, 0, 0.3); font-size: 1.1rem;}
         .box-kumpul { background: #fcf3f6; padding: 20px; border-radius: 15px; margin-top: 20px; border: 2px dashed #f8bbd0; }
-
-        /* Responsif HP */
-        @media (max-width: 900px) {
-            .app-container { flex-direction: column; }
-            .sidebar { position: relative; width: 100%; height: auto; padding: 20px; border-radius: 0 0 30px 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); margin-bottom: 20px;}
-            .main-wrapper { margin-left: 0; width: 100%; padding: 10px 20px 40px 20px; }
-            .topbar { flex-direction: column; gap: 15px; text-align: center; }
-            .user-info { text-align: center; }
-            .header-kelas { flex-direction: column; gap: 15px; text-align: center; }
-        }
+        @media (max-width: 900px) { .app-container { flex-direction: column; } .sidebar { position: relative; width: 100%; height: auto; padding: 20px; border-radius: 0 0 30px 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); margin-bottom: 20px;} .main-wrapper { margin-left: 0; width: 100%; padding: 10px 20px 40px 20px; } .topbar { flex-direction: column; gap: 15px; text-align: center; } .user-info { text-align: center; } .header-kelas { flex-direction: column; gap: 15px; text-align: center; } }
     </style>
 </head>
 <body>
@@ -98,13 +66,12 @@
 
             <div class="join-box">
                 <h3>➕ Gabung Kelas</h3>
-                <input type="text" id="input-kode" class="input-kode" placeholder="KODE KELAS">
+                <input type="text" id="input-kode" class="input-kode" placeholder="KODE KELAS" oninput="this.value = this.value.toUpperCase().replace(/\s/g, '')">
                 <button class="nav-btn primary" onclick="gabungKelas()">Gabung</button>
             </div>
         </div>
 
         <div class="main-wrapper">
-            
             <div class="topbar">
                 <div>
                     <h2 style="color: #333; font-size: 1.5rem; margin:0;">Dashboard Siswa</h2>
@@ -113,14 +80,13 @@
                 <div class="topbar-right">
                     <div class="user-info">
                         <h4 id="nama-siswa">Memuat...</h4>
-                        <p>Siswa </p>
+                        <p>Siswa / Peserta KKN</p>
                     </div>
                     <button class="btn-logout" onclick="prosesLogout()">Keluar</button>
                 </div>
             </div>
 
-            <div class="class-tabs" id="tabs-kelas">
-                </div>
+            <div class="class-tabs" id="tabs-kelas"></div>
 
             <div id="area-materi" style="display: none;">
                 <div class="card-main">
@@ -154,6 +120,36 @@
 
         let listKelas = []; let dataGlobal = {}; let kelasAktifID = '';
 
+        // FITUR OTOMATIS ZONA WAKTU
+        function formatWaktuDetail(timestamp, deadlineStr) {
+            if (!timestamp) return { textFull: "-", status: "Belum Kumpul", textTelat: "" };
+            let dateObj = new Date(timestamp);
+            let dateText = dateObj.toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+            
+            let status = "Tepat Waktu"; let textTelat = "";
+            if (deadlineStr) {
+                let dDate = new Date(deadlineStr).getTime();
+                if (timestamp > dDate) {
+                    status = "Terlambat"; let diff = timestamp - dDate;
+                    let min = Math.floor(diff / 60000); let hr = Math.floor(min / 60); let day = Math.floor(hr / 24);
+                    if (day > 0) textTelat = `(Telat ${day} Hari ${hr % 24} Jam)`;
+                    else if (hr > 0) textTelat = `(Telat ${hr} Jam ${min % 60} Menit)`;
+                    else textTelat = `(Telat ${min} Menit)`;
+                }
+            }
+            return { textFull: dateText, status: status, textTelat: textTelat };
+        }
+
+        function formatSisaWaktu(deadlineStr) {
+            if (!deadlineStr) return null;
+            const dDate = new Date(deadlineStr).getTime(); const nDate = Date.now();
+            const diff = dDate - nDate; const isLate = diff < 0; const absDiff = Math.abs(diff);
+            const min = Math.floor(absDiff / 60000); const hr = Math.floor(min / 60); const day = Math.floor(hr / 24);
+            let text = "";
+            if (day > 0) text = `${day} hari ${hr % 24} jam`; else if (hr > 0) text = `${hr} jam ${min % 60} menit`; else text = `${min} menit`;
+            return { isLate, text: isLate ? `Terlewat ${text} lalu` : `Sisa waktu ${text}` };
+        }
+
         onSnapshot(query(collection(db, "kelas"), where("siswaGabung", "array-contains", sesi.nama)), (snap) => {
             listKelas = []; dataGlobal = {};
             snap.forEach(doc => { listKelas.push(doc.id); dataGlobal[doc.id] = doc.data(); });
@@ -163,7 +159,7 @@
         });
 
         window.gabungKelas = async () => {
-            let id = document.getElementById('input-kode').value.toUpperCase().trim();
+            let id = document.getElementById('input-kode').value; 
             if (!id) return alert("Masukkan kode kelas!");
             if (listKelas.includes(id)) return alert("Anda sudah bergabung di kelas ini!");
 
@@ -222,9 +218,7 @@
             if (fileInput.files.length === 0) return alert("Pilih file tugas dulu!");
 
             const fileSiswa = fileInput.files[0];
-            if (fileSiswa.size > 5 * 1024 * 1024) {
-                return alert("❌ Ukuran file terlalu besar! Maksimal 5 MB. Silakan kompres file Anda.");
-            }
+            if (fileSiswa.size > 5 * 1024 * 1024) return alert("❌ Ukuran file maksimal 5 MB.");
 
             btn.innerText = "⏳ Mengunggah..."; btn.disabled = true; let fileUrl = "";
             try {
@@ -232,11 +226,14 @@
                 const res = await fetch('https://store1.gofile.io/uploadFile', { method: 'POST', body: formData });
                 const resJson = await res.json(); if (resJson.status === "ok") fileUrl = resJson.data.downloadPage;
                 
+                let waktuKirim = Date.now();
                 const docRef = doc(db, "kelas", kelasAktifID); const snap = await getDoc(docRef);
                 let listTugas = snap.data().tugasTerkumpul || [];
-                listTugas.push({ postId: postId, judulTugas: judulTugas, namaSiswa: sesi.nama, link: fileUrl, nilai: "" });
-                await updateDoc(docRef, { tugasTerkumpul: listTugas }); alert("Tugas Berhasil Terkirim!");
-            } catch (err) { alert("Gagal mengirim tugas!"); } finally { btn.innerText = "Kirim ke Guru"; btn.disabled = false; }
+                listTugas.push({ postId: postId, judulTugas: judulTugas, namaSiswa: sesi.nama, link: fileUrl, nilai: "", waktuKumpul: waktuKirim });
+                
+                await updateDoc(docRef, { tugasTerkumpul: listTugas }); 
+                alert("✅ Tugas Berhasil Terkirim!");
+            } catch (err) { alert("Gagal mengirim tugas!"); } finally { btn.innerText = "Kirim Tugas"; btn.disabled = false; }
         };
 
         window.batalkanTugas = async (postId) => {
@@ -260,28 +257,63 @@
                 let nilaiTampil = sudahKumpul && sudahKumpul.nilai ? `<div class="nilai-box">${sudahKumpul.nilai} ✨</div>` : '';
                 let badgeClass = "bg-" + p.tipe; let actionHtml = '';
 
+                let isBaru = (Date.now() - p.id) < 86400000; 
+                let badgeBaruHtml = isBaru ? `<span class="badge-baru">🔥 BARU</span>` : '';
+
+                let infoDeadlineHtml = ''; let sisaWaktuRealtime = formatSisaWaktu(p.deadline);
+                if (p.deadline) {
+                    let tglAsli = new Date(p.deadline).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+                    let warnaDeadline = sisaWaktuRealtime.isLate ? '#d32f2f' : '#f57c00';
+                    infoDeadlineHtml = `
+                        <div style="background:#fff3e0; padding:10px 15px; border-radius:10px; margin-top:15px; margin-bottom:5px; border-left:4px solid ${warnaDeadline};">
+                            <p style="color:#555; font-size:0.85em; font-weight:bold; margin:0;">⏰ Tenggat Akhir: ${tglAsli}</p>
+                            <p style="color:${warnaDeadline}; font-size:0.8em; font-weight:bold; margin:3px 0 0 0;">( ${sisaWaktuRealtime.text} )</p>
+                        </div>`;
+                }
+
+                let isClosed = p.isClosed || false;
+
                 if (p.tipe === 'pengumuman') {
-                    // Tidak ada tombol tugas untuk pengumuman
                     actionHtml = '';
                 } else if (p.tipe === 'game') {
                     actionHtml = `<br><a href="${p.deskripsi}" target="_blank" class="btn-download" style="background:#ff9800; color:white;">🎮 Mainkan Game / Kuis</a>`;
                 } else if (p.tipe === 'materi' || p.tipe === 'soal') {
-                    if (sudahKumpul) {
-                        actionHtml = `
-                        <div class="box-kumpul">
-                            <p style="color:#2e7d32; font-weight:bold; margin-bottom:10px;">✅ Tugas sudah dikumpulkan</p>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                                <a href="${sudahKumpul.link}" target="_blank" class="nav-btn" style="width:auto; padding:8px 20px; background:#e3f2fd; color:#1565c0; border:none; margin:0;">👀 Lihat File Saya</a>
-                                ${sudahKumpul.nilai ? `<span style="color:#d81b60; font-weight:bold; font-size:0.85em; background:#fce4ec; padding:8px 15px; border-radius:15px;">🔒 Sudah dinilai</span>` : `<button onclick="batalkanTugas(${p.id})" class="nav-btn" style="width:auto; padding:8px 20px; background:#ffebee; color:#c62828; border:none; margin:0;">🗑️ Tarik Tugas</button>`}
-                            </div>
-                        </div>`;
+                    if (isClosed) {
+                        actionHtml = `<div class="box-kumpul" style="border-color:#d32f2f; background:#ffebee;"><p style="color:#d32f2f; font-weight:bold; font-size:0.95em; margin:0;">🚫 Pengumpulan telah ditutup oleh Guru.</p>`;
+                        if (sudahKumpul) {
+                            let infoWaktuTutup = formatWaktuDetail(sudahKumpul.waktuKumpul, p.deadline);
+                            actionHtml += `
+                                <div style="margin-top:15px;">
+                                    <p style="font-size:0.85em; color:#555; margin-bottom:10px;"><b>Tugas Anda:</b><br>🕒 ${infoWaktuTutup.textFull} <br><span style="color:${infoWaktuTutup.status === 'Terlambat' ? '#d32f2f' : '#2e7d32'};">${infoWaktuTutup.status} ${infoWaktuTutup.textTelat}</span></p>
+                                    <a href="${sudahKumpul.link}" target="_blank" class="nav-btn" style="width:auto; padding:6px 15px; background:#2196f3; font-size:0.85em; margin:0; display:inline-block;">👀 Lihat File Saya</a>
+                                </div>`;
+                        }
+                        actionHtml += `</div>`;
                     } else {
-                        actionHtml = `
-                        <div class="box-kumpul">
-                            <p style="font-size:0.9em; font-weight:bold; color:#d81b60; margin-bottom:10px;">📤 Kumpulkan Tugas (Maks 5MB, PDF/JPG/PNG):</p>
-                            <input type="file" id="file-${p.id}" accept=".pdf, image/png, image/jpeg, image/jpg" style="margin-bottom:10px; display:block; width:100%; border:1px solid #f8bbd0; border-radius:10px; padding:10px; background:white;">
-                            <button class="nav-btn primary" onclick="kumpulTugas(${p.id}, '${p.judul}')" id="btn-${p.id}" style="width:auto; padding:10px 30px;">Kirim Tugas</button>
-                        </div>`;
+                        if (sudahKumpul) {
+                            let tombolTarik = (!sudahKumpul.nilai) ? `<button onclick="batalkanTugas(${p.id})" class="nav-btn" style="width:auto; padding:8px 20px; background:#ffebee; color:#c62828; border:none; margin:0;">🗑️ Tarik Tugas</button>` : `<span style="color:#d81b60; font-weight:bold; font-size:0.85em; background:#fce4ec; padding:8px 15px; border-radius:15px;">🔒 Sudah dinilai</span>`;
+                            let infoWaktu = formatWaktuDetail(sudahKumpul.waktuKumpul, p.deadline);
+                            let warnaWaktu = infoWaktu.status === "Terlambat" ? "#d32f2f" : "#2e7d32";
+
+                            actionHtml = `
+                            <div class="box-kumpul">
+                                <p style="color:#2e7d32; font-weight:bold; margin-bottom:5px;">✅ Tugas Anda Telah Diterima</p>
+                                <p style="font-size:0.85em; color:#555; margin-bottom:15px; border-bottom:1px dashed #f8bbd0; padding-bottom:10px;">🕒 ${infoWaktu.textFull} <br><span style="color:${warnaWaktu}; font-weight:bold;">${infoWaktu.status} ${infoWaktu.textTelat}</span></p>
+                                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                                    <a href="${sudahKumpul.link}" target="_blank" class="nav-btn" style="width:auto; padding:8px 20px; background:#e3f2fd; color:#1565c0; border:none; margin:0;">👀 Lihat File Saya</a>
+                                    ${tombolTarik}
+                                </div>
+                            </div>`;
+                        } else {
+                            let warningTelat = (sisaWaktuRealtime && sisaWaktuRealtime.isLate) ? `<p style="color:#d32f2f; font-size:0.85em; font-weight:bold; margin-bottom:10px;">⚠️ Batas waktu sudah terlewat. Jika Anda mengumpulkan sekarang, statusnya akan "Terlambat".</p>` : '';
+                            actionHtml = `
+                            <div class="box-kumpul">
+                                <p style="font-size:0.9em; font-weight:bold; color:#d81b60; margin-bottom:10px;">📤 Kumpulkan Tugas (Maks 5MB, PDF/JPG/PNG):</p>
+                                ${warningTelat}
+                                <input type="file" id="file-${p.id}" accept=".pdf, image/png, image/jpeg, image/jpg" style="margin-bottom:10px; display:block; width:100%; border:1px solid #f8bbd0; border-radius:10px; padding:10px; background:white;">
+                                <button class="nav-btn primary" onclick="kumpulTugas(${p.id}, '${p.judul}')" id="btn-${p.id}" style="width:auto; padding:10px 30px;">Kirim Tugas</button>
+                            </div>`;
+                        }
                     }
                 }
 
@@ -291,7 +323,9 @@
                     <div class="post-item" style="border-left: 5px solid ${borderWarna};">
                         ${nilaiTampil} 
                         <span class="badge-tipe ${badgeClass}">${p.tipe}</span>
+                        ${badgeBaruHtml}
                         <h3 style="color:#d81b60; margin-top:15px; font-size: 1.3rem;">${p.judul}</h3>
+                        ${infoDeadlineHtml}
                         <p style="font-size:0.95em; margin: 15px 0; color:#555; white-space:pre-wrap; line-height:1.6;">${p.tipe === 'game' ? 'Silakan klik tombol di bawah untuk mulai.' : p.deskripsi}</p>
                         ${p.link ? `<a href="${p.link}" target="_blank" class="btn-download">📥 Unduh Lampiran Materi</a>` : ''}
                         ${actionHtml}
