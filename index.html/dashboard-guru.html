@@ -57,13 +57,11 @@
 </head>
 <body>
     <div class="app-container">
-        
         <div class="sidebar">
             <div class="brand">
                 <h1>BOSMATH</h1>
                 <span>TEACHER PRO 🎓</span>
             </div>
-            
             <p class="menu-label">Menu Utama</p>
             <button class="nav-btn" style="color: #2196f3; border-color: #bbdefb;" onclick="bukaArsipPribadi()">📁 Arsip Modul Private</button>
             <button class="nav-btn" onclick="window.open('https://www.geogebra.org/classic', '_blank')">📐 Buka GeoGebra</button>
@@ -109,7 +107,6 @@
                 </div>
 
                 <div class="grid-2-col">
-                    
                     <div>
                         <div class="card-main" style="padding: 25px;">
                             <h2 style="font-size: 1.3rem; margin-bottom: 20px;">📝 Buat Postingan</h2>
@@ -158,7 +155,6 @@
                             <div id="daftar-tugas-masuk"></div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -194,24 +190,33 @@
 
         let kelasAktif = ''; let dataGlobal = {}; let dataArsipPribadi = [];
 
+        // FUNGSI TANGGAL YANG SANGAT AMAN
         function formatWaktuDetail(timestamp, deadlineStr) {
             if (!timestamp) return { textFull: "-", status: "Belum Kumpul", textTelat: "" };
-            let dateObj = new Date(timestamp);
-            let dateText = dateObj.toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+            
+            let dateText = "";
+            try {
+                let dateObj = new Date(timestamp);
+                dateText = dateObj.toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + " Waktu Lokal";
+            } catch (e) {
+                dateText = "Waktu Tidak Valid";
+            }
             
             let status = "Tepat Waktu";
             let textTelat = "";
 
             if (deadlineStr) {
-                let dDate = new Date(deadlineStr).getTime();
-                if (timestamp > dDate) {
-                    status = "Terlambat";
-                    let diff = timestamp - dDate;
-                    let min = Math.floor(diff / 60000); let hr = Math.floor(min / 60); let day = Math.floor(hr / 24);
-                    if (day > 0) textTelat = `(Telat ${day} Hari ${hr % 24} Jam)`;
-                    else if (hr > 0) textTelat = `(Telat ${hr} Jam ${min % 60} Menit)`;
-                    else textTelat = `(Telat ${min} Menit)`;
-                }
+                try {
+                    let dDate = new Date(deadlineStr).getTime();
+                    if (timestamp > dDate) {
+                        status = "Terlambat";
+                        let diff = timestamp - dDate;
+                        let min = Math.floor(diff / 60000); let hr = Math.floor(min / 60); let day = Math.floor(hr / 24);
+                        if (day > 0) textTelat = `(Telat ${day} Hari ${hr % 24} Jam)`;
+                        else if (hr > 0) textTelat = `(Telat ${hr} Jam ${min % 60} Menit)`;
+                        else textTelat = `(Telat ${min} Menit)`;
+                    }
+                } catch(e) {}
             }
             return { textFull: dateText, status: status, textTelat: textTelat };
         }
@@ -273,27 +278,35 @@
 
         window.hapusKelasTotal = async () => { if(confirm("Hapus kelas permanen?")) { await deleteDoc(doc(db, "kelas", kelasAktif)); kelasAktif = ''; document.getElementById('area-kerja').style.display = 'none'; document.getElementById('card-siswa').style.display = 'none'; } };
 
+        // === FUNGSI UPLOAD YANG DIJAMIN TIDAK NYANGKUT ===
         window.kirimPostingan = async () => {
             const btn = document.getElementById('btn-kirim'); const fileInput = document.getElementById('input-file'); 
             const deadlineInput = document.getElementById('input-deadline').value; 
             
             if (fileInput.files.length > 0 && fileInput.files[0].size > 10 * 1024 * 1024) return alert("❌ Ukuran file maksimal 10 MB.");
             btn.innerText = "⏳ Sedang Mengirim..."; btn.disabled = true; let fileUrl = "";
-            if (fileInput.files.length > 0) {
-                try {
+            
+            try {
+                if (fileInput.files.length > 0) {
                     const formData = new FormData(); formData.append('file', fileInput.files[0]);
                     const res = await fetch('https://store1.gofile.io/uploadFile', { method: 'POST', body: formData });
-                    const resJson = await res.json(); if (resJson.status === "ok") fileUrl = resJson.data.downloadPage;
-                } catch (err) { alert("Gagal Upload!"); }
-            }
-            try {
+                    const resJson = await res.json(); 
+                    if (resJson.status === "ok") fileUrl = resJson.data.downloadPage;
+                    else throw new Error("Gagal mengunggah file");
+                }
+                
                 let newPost = { 
                     id: Date.now(), tipe: document.getElementById('input-tipe').value, judul: document.getElementById('input-judul').value, 
                     deskripsi: document.getElementById('input-deskripsi').value, deadline: deadlineInput, isClosed: false, link: fileUrl 
                 };
                 await updateDoc(doc(db, "kelas", kelasAktif), { postingan: [newPost, ...dataGlobal[kelasAktif].postingan] });
                 document.getElementById('input-judul').value = ""; document.getElementById('input-deskripsi').value = ""; fileInput.value = ""; document.getElementById('input-deadline').value = "";
-            } catch (e) { alert(e.message); } finally { btn.innerText = "🚀 Kirim ke Kelas Sekarang"; btn.disabled = false; }
+                alert("🚀 Postingan berhasil dikirim!");
+            } catch (e) { 
+                alert("❌ Gagal mengirim. Coba lagi tanpa lampiran file atau pastikan sinyal kuat."); 
+            } finally { 
+                btn.innerText = "🚀 Kirim ke Kelas Sekarang"; btn.disabled = false; 
+            }
         };
 
         window.hapusMateri = async (postId) => { if(confirm("Hapus materi ini?")) { let materiBaru = dataGlobal[kelasAktif].postingan.filter(p => p.id !== postId); await updateDoc(doc(db, "kelas", kelasAktif), { postingan: materiBaru }); } };
@@ -314,7 +327,7 @@
             let nilaiVal = document.getElementById(`nilai-${originalIndex}`).value; 
             if(nilaiVal.trim() === "") return alert("Masukkan angka nilai terlebih dahulu!");
             let btnNilai = document.getElementById(`btn-nilai-${originalIndex}`);
-            btnNilai.innerText = "⏳..";
+            btnNilai.innerText = "⏳ Menyimpan...";
             try {
                 let listTugas = [...dataGlobal[kelasAktif].tugasTerkumpul]; 
                 listTugas[originalIndex].nilai = nilaiVal; 
@@ -393,13 +406,9 @@
             }); 
         }
 
-        // --- EXPORT EXCEL ULTRA-SAFE ---
         window.unduhRekapNilai = () => {
-            if (!kelasAktif || !dataGlobal[kelasAktif]) return alert("Pilih kelas terlebih dahulu!");
-            let d = dataGlobal[kelasAktif]; 
-            let s = d.siswaGabung || []; 
-            let t = d.tugasTerkumpul || [];
-            
+            if (!kelasAktif || !dataGlobal[kelasAktif]) return alert("Pilih kelas!");
+            let d = dataGlobal[kelasAktif]; let s = d.siswaGabung || []; let t = d.tugasTerkumpul || [];
             if (s.length === 0) return alert("Belum ada siswa di kelas ini.");
             
             let filterSelect = document.getElementById('filter-tugas').value;
@@ -410,37 +419,38 @@
             }
 
             let sep = ";"; 
-            let csvContent = "\uFEFF"; // BOM untuk format Excel
+            let csvContent = "\uFEFF"; 
 
+            let tglCetak = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
             csvContent += `REKAPITULASI NILAI KELAS: ${d.namaKelas}\n`;
-            csvContent += `Dicetak pada: ${new Date().toLocaleString('id-ID')}\n\n`;
+            csvContent += `Dicetak pada: ${tglCetak} Waktu Lokal\n\n`;
 
-            csvContent += "No" + sep + "Nama Lengkap" + sep + "Kelas";
+            csvContent += "No" + sep + "Nama Lengkap";
             judulTugasUnik.forEach(judul => { 
-                csvContent += sep + "TUGAS: " + judul + sep + "WAKTU KUMPUL" + sep + "STATUS TELAT"; 
+                csvContent += sep + "TUGAS: " + judul + sep + "NILAI" + sep + "WAKTU KUMPUL" + sep + "STATUS"; 
             }); 
             csvContent += "\n";
 
             s.forEach((name, i) => {
-                let row = [(i + 1), name, d.namaKelas];
+                let row = [(i + 1), name];
                 judulTugasUnik.forEach(judul => { 
                     let job = t.find(x => x.namaSiswa === name && x.judulTugas === judul); 
                     if (job) {
-                        let postData = (d.postingan || []).find(p => p.id === job.postId);
+                        let postData = d.postingan.find(p => p.id === job.postId);
                         let deadline = postData ? postData.deadline : null;
                         let info = formatWaktuDetail(job.waktuKumpul, deadline);
                         
+                        row.push(judul);
                         row.push(job.nilai ? job.nilai : "Belum Dinilai");
                         row.push(info.textFull); 
                         row.push(info.status === "Terlambat" ? `${info.status} ${info.textTelat}` : info.status); 
                     } else {
-                        row.push("Belum Kumpul", "-", "-");
+                        row.push(judul, "Belum Kumpul", "-", "-");
                     }
                 });
                 csvContent += row.join(sep) + "\n";
             });
 
-            // LOGIKA DOWNLOAD YANG AMAN DARI BLOKIR BROWSER
             try {
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a");
@@ -451,18 +461,10 @@
                 link.setAttribute("download", `Rekap_Nilai_${d.namaKelas.replace(/\s+/g, '_')}_${namaFile}.csv`); 
                 link.style.visibility = 'hidden';
                 
-                // Tempelkan ke HTML, klik, lalu beri jeda sebelum dihapus
                 document.body.appendChild(link);
                 link.click();
-                
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                }, 200);
-
-            } catch(e) {
-                alert("Terjadi kesalahan saat mengunduh file: " + e.message);
-            }
+                setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 200);
+            } catch(e) { alert("Gagal mengunduh file: " + e.message); }
         };
 
         window.simpanArsip = async () => { let j = document.getElementById('arsip-judul').value; let l = document.getElementById('arsip-link').value; if(!j || !l) return alert("Isi semua!"); let newList = [{ id: Date.now(), judul: j, link: l }, ...dataArsipPribadi]; await setDoc(doc(db, "arsip_guru", sesi.uid), { items: newList }, { merge: true }); alert("Tersimpan!"); document.getElementById('arsip-judul').value = ""; document.getElementById('arsip-link').value = ""; };
@@ -474,8 +476,10 @@
             list.forEach(p => { 
                 let deadlineText = '';
                 if(p.deadline) {
-                    let dObj = new Date(p.deadline);
-                    deadlineText = dObj.toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+                    try {
+                        let dObj = new Date(p.deadline);
+                        deadlineText = dObj.toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + " Waktu Lokal";
+                    } catch(e) {}
                 }
                 let deadlineHtml = p.deadline ? `<p style="color:#d32f2f; font-size:0.85em; font-weight:bold; margin-bottom:5px;">⏰ Tenggat: ${deadlineText}</p>` : '';
                 
