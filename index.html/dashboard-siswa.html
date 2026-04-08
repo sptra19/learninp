@@ -120,34 +120,44 @@
 
         let listKelas = []; let dataGlobal = {}; let kelasAktifID = '';
 
-        // FITUR OTOMATIS ZONA WAKTU
         function formatWaktuDetail(timestamp, deadlineStr) {
             if (!timestamp) return { textFull: "-", status: "Belum Kumpul", textTelat: "" };
-            let dateObj = new Date(timestamp);
-            let dateText = dateObj.toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+            
+            let dateText = "";
+            try {
+                let dateObj = new Date(timestamp);
+                dateText = dateObj.toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + " Waktu Lokal";
+            } catch (e) {
+                dateText = "Waktu Tidak Valid";
+            }
             
             let status = "Tepat Waktu"; let textTelat = "";
+
             if (deadlineStr) {
-                let dDate = new Date(deadlineStr).getTime();
-                if (timestamp > dDate) {
-                    status = "Terlambat"; let diff = timestamp - dDate;
-                    let min = Math.floor(diff / 60000); let hr = Math.floor(min / 60); let day = Math.floor(hr / 24);
-                    if (day > 0) textTelat = `(Telat ${day} Hari ${hr % 24} Jam)`;
-                    else if (hr > 0) textTelat = `(Telat ${hr} Jam ${min % 60} Menit)`;
-                    else textTelat = `(Telat ${min} Menit)`;
-                }
+                try {
+                    let dDate = new Date(deadlineStr).getTime();
+                    if (timestamp > dDate) {
+                        status = "Terlambat"; let diff = timestamp - dDate;
+                        let min = Math.floor(diff / 60000); let hr = Math.floor(min / 60); let day = Math.floor(hr / 24);
+                        if (day > 0) textTelat = `(Telat ${day} Hari ${hr % 24} Jam)`;
+                        else if (hr > 0) textTelat = `(Telat ${hr} Jam ${min % 60} Menit)`;
+                        else textTelat = `(Telat ${min} Menit)`;
+                    }
+                } catch(e) {}
             }
             return { textFull: dateText, status: status, textTelat: textTelat };
         }
 
         function formatSisaWaktu(deadlineStr) {
             if (!deadlineStr) return null;
-            const dDate = new Date(deadlineStr).getTime(); const nDate = Date.now();
-            const diff = dDate - nDate; const isLate = diff < 0; const absDiff = Math.abs(diff);
-            const min = Math.floor(absDiff / 60000); const hr = Math.floor(min / 60); const day = Math.floor(hr / 24);
-            let text = "";
-            if (day > 0) text = `${day} hari ${hr % 24} jam`; else if (hr > 0) text = `${hr} jam ${min % 60} menit`; else text = `${min} menit`;
-            return { isLate, text: isLate ? `Terlewat ${text} lalu` : `Sisa waktu ${text}` };
+            try {
+                const dDate = new Date(deadlineStr).getTime(); const nDate = Date.now();
+                const diff = dDate - nDate; const isLate = diff < 0; const absDiff = Math.abs(diff);
+                const min = Math.floor(absDiff / 60000); const hr = Math.floor(min / 60); const day = Math.floor(hr / 24);
+                let text = "";
+                if (day > 0) text = `${day} hari ${hr % 24} jam`; else if (hr > 0) text = `${hr} jam ${min % 60} menit`; else text = `${min} menit`;
+                return { isLate, text: isLate ? `Terlewat ${text} lalu` : `Sisa waktu ${text}` };
+            } catch(e) { return null; }
         }
 
         onSnapshot(query(collection(db, "kelas"), where("siswaGabung", "array-contains", sesi.nama)), (snap) => {
@@ -212,6 +222,7 @@
             if(data) { document.getElementById('judul-kelas-aktif').innerText = data.namaKelas; renderDaftarMateri(data.postingan || [], data.tugasTerkumpul || []); }
         }
 
+        // === FUNGSI UPLOAD YANG DIJAMIN TIDAK NYANGKUT ===
         window.kumpulTugas = async (postId, judulTugas) => {
             const fileInput = document.getElementById(`file-${postId}`);
             const btn = document.getElementById(`btn-${postId}`);
@@ -222,9 +233,24 @@
 
             btn.innerText = "⏳ Mengunggah..."; btn.disabled = true; let fileUrl = "";
             try {
+                // Gunakan URL yang lama yang terbukti selalu stabil di GoFile tanpa login
                 const formData = new FormData(); formData.append('file', fileSiswa);
                 const res = await fetch('https://store1.gofile.io/uploadFile', { method: 'POST', body: formData });
-                const resJson = await res.json(); if (resJson.status === "ok") fileUrl = resJson.data.downloadPage;
+                const resJson = await res.json(); 
+                if (resJson.status === "ok") {
+                    fileUrl = resJson.data.downloadPage;
+                } else {
+                    // Kalau store1 mati, panggil API untuk cari store lain yang hidup
+                    const reqServer = await fetch('https://api.gofile.io/servers');
+                    const resServer = await reqServer.json();
+                    if (resServer.status !== 'ok') throw new Error("Server sibuk");
+                    const serverAktif = resServer.data.servers[0].name;
+                    
+                    const resFallback = await fetch(`https://${serverAktif}.gofile.io/uploadFile`, { method: 'POST', body: formData });
+                    const jsonFallback = await resFallback.json();
+                    if (jsonFallback.status === "ok") fileUrl = jsonFallback.data.downloadPage;
+                    else throw new Error("Gagal upload");
+                }
                 
                 let waktuKirim = Date.now();
                 const docRef = doc(db, "kelas", kelasAktifID); const snap = await getDoc(docRef);
@@ -233,7 +259,12 @@
                 
                 await updateDoc(docRef, { tugasTerkumpul: listTugas }); 
                 alert("✅ Tugas Berhasil Terkirim!");
-            } catch (err) { alert("Gagal mengirim tugas!"); } finally { btn.innerText = "Kirim Tugas"; btn.disabled = false; }
+
+            } catch (err) { 
+                alert("❌ Gagal mengirim tugas! Pastikan jaringan internet Anda stabil."); 
+            } finally { 
+                btn.innerText = "Kirim Tugas"; btn.disabled = false; 
+            }
         };
 
         window.batalkanTugas = async (postId) => {
@@ -262,7 +293,10 @@
 
                 let infoDeadlineHtml = ''; let sisaWaktuRealtime = formatSisaWaktu(p.deadline);
                 if (p.deadline) {
-                    let tglAsli = new Date(p.deadline).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+                    let tglAsli = "";
+                    try {
+                        tglAsli = new Date(p.deadline).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + " Waktu Lokal";
+                    } catch(e) {}
                     let warnaDeadline = sisaWaktuRealtime.isLate ? '#d32f2f' : '#f57c00';
                     infoDeadlineHtml = `
                         <div style="background:#fff3e0; padding:10px 15px; border-radius:10px; margin-top:15px; margin-bottom:5px; border-left:4px solid ${warnaDeadline};">
